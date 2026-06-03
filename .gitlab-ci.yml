@@ -1,0 +1,23 @@
+variables:
+  # MR 作成をスキップするプロジェクト ID をカンマ区切りで指定する（例: "123,456"）。
+  # スケジュール実行時は Settings > CI/CD > Variables で上書き可能。
+  SKIP_PROJECT_IDS: ""
+  PNPM_STORE_DIR: .pnpm-store
+
+create-merge-requests:
+  image: node:22.13-alpine
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - $PNPM_STORE_DIR
+  script:
+    - corepack enable pnpm
+    - pnpm config set store-dir $PNPM_STORE_DIR
+    - pnpm install --frozen-lockfile
+    - pnpm check
+    - pnpm build
+    - pnpm start
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

@@ -1,0 +1,7 @@
+{
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
+  },
+  "js/ts.format.semicolons": "remove"
+}

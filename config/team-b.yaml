@@ -1,0 +1,11 @@
+repositories:
+  - project_id: 456
+    project_name: my-service-b
+    branch_pairs:
+      - source: 2026/1
+        target: 2026/2
+  - project_id: 789
+    project_name: my-service-c
+    branch_pairs:
+      - source: develop
+        target: main
