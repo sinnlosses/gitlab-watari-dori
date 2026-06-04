@@ -21,36 +21,34 @@ import type { BranchPair } from "./types.js"
 import { FatalError } from "./utils/errors.js"
 import { extractHttpStatus, isFatalError, toErrorMessage } from "./utils/http.js"
 import { logger } from "./utils/logger.js"
+import { timed } from "./utils/timer.js"
 
 /** MR 作成試行の結果。CREATED: 作成成功、SKIPPED: 条件未達でスキップ、ERROR: 非 fatal なエラー */
 export type Result = "CREATED" | "SKIPPED" | "ERROR"
 
+export async function run(): Promise<void> {
+  logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
+  const { duration_ms } = await timed(main)
+  logger.info({ event: "run_end", duration_ms })
+}
+
 /**
- * エントリポイント。設定ファイルを読み込み、全リポジトリ・ブランチペアに対して
- * MR 作成を並列実行する。1 件でも ERROR があれば終了コード 1 で終了する。
+ * メインロジック。設定ファイルを読み込み、全リポジトリ・ブランチペアに対して
+ * MR 作成を並列実行する。1 件でも ERROR があれば throw する。
  * DRY_RUN=true のときは MR を作成せず、作成対象のログのみ出力する。
  */
 export async function main(): Promise<void> {
-  const startTime = Date.now()
   const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
   const { repositories } = loadConfig(CONFIG_PATH)
-
-  logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
-
-  if (DRY_RUN) {
-    logger.info({ event: "dry_run_enabled" })
-  }
 
   const skippedProjectIds = parseSkipProjectIds(SKIP_PROJECT_IDS)
   if (skippedProjectIds.size > 0) {
     logger.info({ event: "skip_projects", projectIds: [...skippedProjectIds] })
   }
-
   const targetRepositories = repositories.filter(
     ({ projectId }) => !skippedProjectIds.has(projectId),
   )
 
-  // 同時実行数を制限し、レートリミットへの抵触を防ぐ
   const limit = pLimit(CONCURRENCY_LIMIT)
   const mrCreationTasks = targetRepositories.flatMap(({ projectId, projectName, branchPairs }) =>
     branchPairs.map((branchPair) =>
@@ -69,7 +67,7 @@ export async function main(): Promise<void> {
         httpStatus: result.reason.httpStatus,
         message: result.reason.message,
       })
-      process.exit(1)
+      throw result.reason
     }
   }
 
@@ -91,8 +89,6 @@ export async function main(): Promise<void> {
   )
 
   logger.info({ event: "summary", ...resultCounts })
-  logger.info({ event: "run_end", duration_ms: Date.now() - startTime, ...resultCounts })
-  if (resultCounts.ERROR > 0) process.exit(1)
 }
 
 /**
@@ -138,11 +134,12 @@ export async function createMrIfNeeded(
     source: branchPair.source,
     target: branchPair.target,
   }
+  if (dryRun) {
+    logger.info({ ...logContext, result: "SKIPPED", reason: "dry_run" })
+    return "SKIPPED"
+  }
+
   try {
-    if (dryRun) {
-      logger.info({ ...logContext, result: "SKIPPED", reason: "dry_run" })
-      return "SKIPPED"
-    }
     const [sourceExists, targetExists] = await Promise.all([
       branchExists(gitlab, projectId, branchPair.source),
       branchExists(gitlab, projectId, branchPair.target),

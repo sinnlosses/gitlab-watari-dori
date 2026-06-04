@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { MockInstance } from "vitest"
 
 vi.mock("../src/lib/gitlab.js")
 vi.mock("../src/lib/config.js")
@@ -24,7 +23,7 @@ import {
   createClient,
 } from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
-import { parseSkipProjectIds, createMrIfNeeded, main } from "../src/main.js"
+import { parseSkipProjectIds, createMrIfNeeded, main, run } from "../src/main.js"
 import { FatalError } from "../src/utils/errors.js"
 import { makeHttpError } from "./helpers.js"
 
@@ -194,10 +193,7 @@ describe("createMrIfNeeded", () => {
 })
 
 describe("main", () => {
-  let exitSpy: MockInstance
-
   beforeEach(() => {
-    exitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never)
     vi.mocked(createClient).mockReturnValue(mockGitlab)
     vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
     vi.mocked(branchExists).mockResolvedValue(true)
@@ -207,39 +203,34 @@ describe("main", () => {
   })
 
   afterEach(() => {
-    exitSpy.mockRestore()
     vi.clearAllMocks()
   })
 
-  it("リポジトリがないとき exit を呼ばない", async () => {
-    await main()
-    expect(exitSpy).not.toHaveBeenCalled()
+  it("リポジトリがないとき resolve する", async () => {
+    await expect(main()).resolves.toBeUndefined()
   })
 
-  it("全件 CREATED のとき exit を呼ばない", async () => {
+  it("全件 CREATED のとき resolve する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
     })
-    await main()
-    expect(exitSpy).not.toHaveBeenCalled()
+    await expect(main()).resolves.toBeUndefined()
   })
 
-  it("1 件でも ERROR があるとき exit(1) を呼ぶ", async () => {
+  it("1 件でも ERROR があるとき resolve する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
     })
     vi.mocked(branchExists).mockResolvedValue(false)
-    await main()
-    expect(exitSpy).toHaveBeenCalledWith(1)
+    await expect(main()).resolves.toBeUndefined()
   })
 
-  it("FatalError が発生したとき exit(1) を呼ぶ", async () => {
+  it("FatalError が発生したとき reject する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
     })
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
-    await main()
-    expect(exitSpy).toHaveBeenCalledWith(1)
+    await expect(main()).rejects.toThrow()
   })
 
   it("createClient に GITLAB_URL と ACCESS_TOKEN を渡す", async () => {
@@ -267,16 +258,30 @@ describe("main", () => {
       repositories: [{ projectId: 1, projectName: "repo-a", branchPairs: [branchPair] }],
     })
     vi.mocked(hasDiff).mockResolvedValue(false)
-    await main()
+    await expect(main()).resolves.toBeUndefined()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "summary", CREATED: 0, SKIPPED: 1, ERROR: 0 }),
     )
-    expect(exitSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe("run", () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReturnValue(mockGitlab)
+    vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
+    vi.mocked(branchExists).mockResolvedValue(true)
+    vi.mocked(hasDiff).mockResolvedValue(true)
+    vi.mocked(openMergeRequestExists).mockResolvedValue(false)
+    vi.mocked(createMergeRequest).mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   it("run_start イベントをログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await main()
+    await run()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_start" }),
     )
@@ -284,7 +289,7 @@ describe("main", () => {
 
   it("run_end イベントに duration_ms を含めてログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await main()
+    await run()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_end", duration_ms: expect.any(Number) }),
     )
