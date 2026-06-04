@@ -115,18 +115,18 @@ GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm start
 .
 ├── src/
 │   ├── index.ts          # エントリポイント
-│   ├── main.ts           # メインロジック・エクスポート
+│   ├── main.ts           # メインロジック
 │   ├── types.ts          # 型定義
 │   ├── lib/
 │   │   ├── gitlab.ts     # GitLab API クライアント操作
 │   │   ├── config.ts     # 設定ファイルのロード・パース
 │   │   └── env.ts        # 環境変数ユーティリティ
 │   └── utils/
-│       ├── errors.ts     # カスタムエラークラス
-│       ├── http.ts       # HTTP エラーハンドリングユーティリティ
+│       ├── errors.ts     # カスタムエラー
+│       ├── http.ts       # HTTP ユーティリティ
 │       └── logger.ts     # 構造化 JSON ロガー
 ├── test/                 # テスト
-├── config/         # 対象リポジトリ設定（複数ファイルに分割）
+├── config/               # 対象リポジトリ設定（複数ファイルに分割）
 ├── .gitlab-ci.yml        # CI ジョブ定義
 └── package.json
 ```

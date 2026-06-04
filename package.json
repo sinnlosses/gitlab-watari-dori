@@ -6,15 +6,14 @@
     "start": "node dist/src/index.js",
     "dev": "tsx src/index.ts",
     "lint": "oxlint src && pnpm lint:validate-config",
-    "lint:validate-config": "tsx scripts/lint/validate-config.ts",
     "lint:fix": "oxlint src --fix",
+    "lint:validate-config": "tsx scripts/lint/validate-config.ts",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test"
+    "check": "pnpm tsc --noEmit && pnpm lint && pnpm format:check && pnpm test"
   },
   "dependencies": {
     "@gitbeaker/rest": "^41.0.0",
@@ -24,7 +23,7 @@
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.13.0",
     "@vitest/coverage-v8": "^2.1.9",
     "oxfmt": "^0.52.0",
     "oxlint": "^1.67.0",
