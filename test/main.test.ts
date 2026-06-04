@@ -99,6 +99,65 @@ describe("createMrIfNeeded", () => {
     expect(createMergeRequest).not.toHaveBeenCalled()
   })
 
+  it("dryRun=true のとき branchExists を呼び出す", async () => {
+    await createMrIfNeeded(mockGitlab, toProjectId(1), toProjectName("repo"), branchPair, true)
+    expect(branchExists).toHaveBeenCalled()
+  })
+
+  it("dryRun=true のとき hasDiff を呼び出す", async () => {
+    await createMrIfNeeded(mockGitlab, toProjectId(1), toProjectName("repo"), branchPair, true)
+    expect(hasDiff).toHaveBeenCalled()
+  })
+
+  it("dryRun=true のとき openMergeRequestExists を呼び出す", async () => {
+    await createMrIfNeeded(mockGitlab, toProjectId(1), toProjectName("repo"), branchPair, true)
+    expect(openMergeRequestExists).toHaveBeenCalled()
+  })
+
+  it("dryRun=true かつ差分がないとき 'SKIPPED'(no_diff) を返す", async () => {
+    const { logger } = await import("../src/utils/logger.js")
+    vi.mocked(hasDiff).mockResolvedValue(false)
+    const result = await createMrIfNeeded(
+      mockGitlab,
+      toProjectId(1),
+      toProjectName("repo"),
+      branchPair,
+      true,
+    )
+    expect(result).toBe("SKIPPED")
+    expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: "no_diff" }),
+    )
+  })
+
+  it("dryRun=true かつ MR が既存のとき 'SKIPPED'(mr_exists) を返す", async () => {
+    const { logger } = await import("../src/utils/logger.js")
+    vi.mocked(openMergeRequestExists).mockResolvedValue(true)
+    const result = await createMrIfNeeded(
+      mockGitlab,
+      toProjectId(1),
+      toProjectName("repo"),
+      branchPair,
+      true,
+    )
+    expect(result).toBe("SKIPPED")
+    expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: "mr_exists" }),
+    )
+  })
+
+  it("dryRun=true かつブランチが存在しないとき 'ERROR' を返す", async () => {
+    vi.mocked(branchExists).mockResolvedValue(false)
+    const result = await createMrIfNeeded(
+      mockGitlab,
+      toProjectId(1),
+      toProjectName("repo"),
+      branchPair,
+      true,
+    )
+    expect(result).toBe("ERROR")
+  })
+
   it("source ブランチが存在しないとき 'ERROR' を返す", async () => {
     vi.mocked(branchExists).mockImplementation(async (_client, _id, branch) => branch !== "develop")
     expect(

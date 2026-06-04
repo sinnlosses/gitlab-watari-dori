@@ -116,10 +116,6 @@ export async function createMrIfNeeded(
     source: branchPair.source,
     target: branchPair.target,
   }
-  if (dryRun) {
-    logger.info({ ...logContext, result: "SKIPPED", reason: "dry_run" })
-    return "SKIPPED"
-  }
 
   try {
     const [sourceExists, targetExists] = await Promise.all([
@@ -147,6 +143,11 @@ export async function createMrIfNeeded(
 
     if (await openMergeRequestExists(gitlab, projectId, branchPair)) {
       logger.info({ ...logContext, result: "SKIPPED", reason: "mr_exists" })
+      return "SKIPPED"
+    }
+
+    if (dryRun) {
+      logger.info({ ...logContext, result: "SKIPPED", reason: "dry_run" })
       return "SKIPPED"
     }
 
