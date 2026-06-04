@@ -56,35 +56,10 @@ export async function process(): Promise<void> {
     ),
   )
 
-  // 1 件の失敗で全タスクを中断しないよう allSettled を使用する
-  const settledResults = await Promise.allSettled(mrCreationTasks)
+  const results = await Promise.all(mrCreationTasks)
 
-  // 認証エラーや 5xx など回復不能なエラーは即時終了する
-  for (const result of settledResults) {
-    if (result.status === "rejected" && result.reason instanceof FatalError) {
-      logger.error({
-        event: "fatal_error",
-        httpStatus: result.reason.httpStatus,
-        message: result.reason.message,
-      })
-      throw result.reason
-    }
-  }
-
-  const resultCounts = settledResults.reduce<Record<Result, number>>(
-    (counts, settledResult) => {
-      if (settledResult.status === "rejected") {
-        logger.error({
-          event: "unexpected_rejection",
-          message: toErrorMessage(settledResult.reason),
-        })
-        return { ...counts, ERROR: counts.ERROR + 1 }
-      }
-      return {
-        ...counts,
-        [settledResult.value]: counts[settledResult.value] + 1,
-      }
-    },
+  const resultCounts = results.reduce<Record<Result, number>>(
+    (counts, result) => ({ ...counts, [result]: counts[result] + 1 }),
     { CREATED: 0, SKIPPED: 0, ERROR: 0 },
   )
 
@@ -149,7 +124,11 @@ export async function createMrIfNeeded(
         !sourceExists ? branchPair.source : null,
         !targetExists ? branchPair.target : null,
       ].filter((b): b is string => b !== null)
-      logger.error({ ...logContext, result: "ERROR", reason: "branch_not_found", missingBranches })
+      logger.error({
+        ...logContext,
+        result: "ERROR",
+        reason: `branch_not_found. missingBranches: ${missingBranches}`,
+      })
       return "ERROR"
     }
     const diffExists = await hasDiff(gitlab, projectId, branchPair)
@@ -165,14 +144,14 @@ export async function createMrIfNeeded(
     logger.info({ ...logContext, result: "CREATED" })
     return "CREATED"
   } catch (err) {
+    // 認証エラーや 5xx など回復不能なエラーは即時終了する
     if (isFatalError(err)) {
       throw new FatalError(extractHttpStatus(err), err)
     }
     logger.error({
       ...logContext,
       result: "ERROR",
-      message: toErrorMessage(err),
-      httpStatus: extractHttpStatus(err),
+      reason: `httpStatus: ${extractHttpStatus(err)}, message: ${toErrorMessage(err)}`,
     })
     return "ERROR"
   }

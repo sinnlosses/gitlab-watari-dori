@@ -128,7 +128,7 @@ describe("createMrIfNeeded", () => {
     vi.mocked(branchExists).mockImplementation(async (_client, _id, branch) => branch !== "develop")
     await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)
     expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
-      expect.objectContaining({ missingBranches: ["develop"] }),
+      expect.objectContaining({ reason: expect.stringContaining("develop") }),
     )
   })
 
@@ -137,7 +137,7 @@ describe("createMrIfNeeded", () => {
     vi.mocked(branchExists).mockResolvedValue(false)
     await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)
     expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
-      expect.objectContaining({ missingBranches: ["develop", "main"] }),
+      expect.objectContaining({ reason: expect.stringContaining("develop,main") }),
     )
   })
 
@@ -146,7 +146,7 @@ describe("createMrIfNeeded", () => {
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(403))
     await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)
     expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
-      expect.objectContaining({ httpStatus: 403 }),
+      expect.objectContaining({ reason: expect.stringContaining("403") }),
     )
   })
 
