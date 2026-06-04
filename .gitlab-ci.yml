@@ -26,6 +26,7 @@ variables:
     paths:
       - $PNPM_STORE_DIR
   before_script:
+    - npm install -g corepack
     - corepack enable
     - corepack prepare pnpm@11.5.1 --activate
     - pnpm config set store-dir $PNPM_STORE_DIR
