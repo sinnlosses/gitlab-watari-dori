@@ -86,12 +86,12 @@ flowchart TD
 ### 実行ログの例
 
 ```json
-{"level":"info","event":"run_start","dryRun":false,"concurrencyLimit":5}
-{"level":"info","projectId":123,"projectName":"my-service-a","source":"develop","target":"staging","result":"CREATED"}
-{"level":"info","projectId":124,"projectName":"my-service-b","source":"develop","target":"staging","result":"SKIPPED","reason":"no_diff"}
-{"level":"info","projectId":125,"projectName":"my-service-c","source":"develop","target":"staging","result":"SKIPPED","reason":"mr_exists"}
-{"level":"info","event":"summary","CREATED":1,"SKIPPED":2,"ERROR":0}
-{"level":"info","event":"run_end","duration_ms":842}
+{"level":"info","timestamp":"2026-06-05T00:00:00.000Z","event":"run_start","dryRun":false,"concurrencyLimit":5}
+{"level":"info","timestamp":"2026-06-05T00:00:00.123Z","projectId":123,"projectName":"my-service-a","source":"develop","target":"staging","result":"CREATED"}
+{"level":"info","timestamp":"2026-06-05T00:00:00.456Z","projectId":124,"projectName":"my-service-b","source":"develop","target":"staging","result":"SKIPPED","reason":"no_diff"}
+{"level":"info","timestamp":"2026-06-05T00:00:00.789Z","projectId":125,"projectName":"my-service-c","source":"develop","target":"staging","result":"SKIPPED","reason":"mr_exists"}
+{"level":"info","timestamp":"2026-06-05T00:00:00.800Z","event":"summary","CREATED":1,"SKIPPED":2,"ERROR":0}
+{"level":"info","timestamp":"2026-06-05T00:00:00.842Z","event":"run_end","duration_ms":842}
 ```
 
 ## 設定
@@ -233,6 +233,8 @@ GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm start
 │   └── utils/
 │       ├── errors.ts     # カスタムエラー
 │       ├── http.ts       # HTTP ユーティリティ
+│       ├── retry.ts      # 指数バックオフリトライ
+│       ├── timer.ts      # 実行時間計測
 │       └── logger.ts     # 構造化 JSON ロガー
 ├── test/                 # テスト
 ├── config/               # 対象リポジトリ設定

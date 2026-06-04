@@ -20,7 +20,9 @@
 
 README の構成図に載っていない実装上の補足：
 
-- `src/main.ts` — `createMrIfNeeded` / `main` / `parseSkipProjectIds` の 3 関数が主体
+- `src/main.ts` — `run` / `process` / `createMrIfNeeded` / `parseSkipProjectIds` の 4 関数が主体
+  - `run()`: エントリポイント。全体を時間計測でラップ
+  - `process()`: 設定読み込み・並列処理・結果集約
 - `src/utils/http.ts` — `isFatalStatus`（401/5xx）、`isFatalError`（ネットワーク障害含む）、`extractHttpStatus`
 - `src/utils/retry.ts` — 429/502/503/504 を指数バックオフでリトライする `withRetry`
 - `src/lib/config.ts` — Zod で BranchPair のバリデーション（空文字・同一ブランチ禁止・パストラバーサル禁止）
