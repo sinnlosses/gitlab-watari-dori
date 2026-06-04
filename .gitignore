@@ -19,4 +19,4 @@ dist/
 
 .idea/
 
-./test-results.xml
+test-results.xml
