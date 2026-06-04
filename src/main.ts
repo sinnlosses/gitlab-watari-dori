@@ -26,16 +26,16 @@ import { timed } from "./utils/timer.js"
 
 export async function main(): Promise<void> {
   logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
-  const { duration_ms } = await timed(process)
+  const { value: resultCounts, duration_ms } = await timed(process)
+  logger.info({ event: "summary", ...resultCounts })
   logger.info({ event: "run_end", duration_ms })
 }
 
 /**
- * 設定ファイルを読み込み、全リポジトリ・ブランチペアに対して
- * MR 作成を並列実行する。1 件でも ERROR があれば throw する。
- * DRY_RUN=true のときは MR を作成せず、作成対象のログのみ出力する。
+ * 設定ファイルを読み込み、全リポジトリ・ブランチペアに対してMR作成を並列実行する。
+ * DRY_RUN=true のときはMRを作成せず、作成対象のログのみ出力する。
  */
-export async function process(): Promise<void> {
+export async function process(): Promise<Record<Result, number>> {
   const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
   const { repositories } = loadConfig(CONFIG_PATH)
 
@@ -61,7 +61,7 @@ export async function process(): Promise<void> {
     { CREATED: 0, SKIPPED: 0, ERROR: 0 },
   )
 
-  logger.info({ event: "summary", ...resultCounts })
+  return resultCounts
 }
 
 /**

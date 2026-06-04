@@ -55,7 +55,7 @@ export async function openMergeRequestExists(
 }
 
 function buildMrTitle(source: string, target: string): string {
-  return `Auto MR by Watari-Dori : ${source} → ${target}`
+  return `Auto MR by Watari-Dori : ${source} into ${target}`
 }
 
 export async function createMergeRequest(

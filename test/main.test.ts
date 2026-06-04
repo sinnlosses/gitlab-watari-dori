@@ -240,7 +240,7 @@ describe("process", () => {
   })
 
   it("リポジトリがないとき resolve する", async () => {
-    await expect(processFn()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toEqual({ CREATED: 0, SKIPPED: 0, ERROR: 0 })
   })
 
   it("全件 CREATED のとき resolve する", async () => {
@@ -253,7 +253,7 @@ describe("process", () => {
         },
       ],
     })
-    await expect(processFn()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toEqual({ CREATED: 1, SKIPPED: 0, ERROR: 0 })
   })
 
   it("1 件でも ERROR があるとき resolve する", async () => {
@@ -267,7 +267,7 @@ describe("process", () => {
       ],
     })
     vi.mocked(branchExists).mockResolvedValue(false)
-    await expect(processFn()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toEqual({ CREATED: 0, SKIPPED: 0, ERROR: 1 })
   })
 
   it("FatalError が発生したとき reject する", async () => {
@@ -289,8 +289,7 @@ describe("process", () => {
     expect(createClient).toHaveBeenCalledWith("https://gitlab.test", "test-token")
   })
 
-  it("全件 CREATED のとき summary に正しい件数を出力する", async () => {
-    const { logger } = await import("../src/utils/logger.js")
+  it("全件 CREATED のとき正しい件数を返す", async () => {
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [
         {
@@ -305,14 +304,10 @@ describe("process", () => {
         },
       ],
     })
-    await processFn()
-    expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "summary", CREATED: 2, SKIPPED: 0, ERROR: 0 }),
-    )
+    await expect(processFn()).resolves.toEqual({ CREATED: 2, SKIPPED: 0, ERROR: 0 })
   })
 
   it("一部 SKIPPED を含む場合 summary の件数が正しい", async () => {
-    const { logger } = await import("../src/utils/logger.js")
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [
         {
@@ -323,10 +318,7 @@ describe("process", () => {
       ],
     })
     vi.mocked(hasDiff).mockResolvedValue(false)
-    await expect(processFn()).resolves.toBeUndefined()
-    expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "summary", CREATED: 0, SKIPPED: 1, ERROR: 0 }),
-    )
+    await expect(processFn()).resolves.toEqual({ CREATED: 0, SKIPPED: 1, ERROR: 0 })
   })
 })
 
@@ -357,6 +349,14 @@ describe("main", () => {
     await main()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_end", duration_ms: expect.any(Number) }),
+    )
+  })
+
+  it("summary イベントをログ出力する", async () => {
+    const { logger } = await import("../src/utils/logger.js")
+    await main()
+    expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "summary", CREATED: 0, SKIPPED: 0, ERROR: 0 }),
     )
   })
 })
