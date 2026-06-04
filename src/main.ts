@@ -17,7 +17,7 @@ import {
   openMergeRequestExists,
   createMergeRequest,
 } from "./lib/gitlab.js"
-import type { BranchName, BranchPair, ProjectId, Result } from "./types.js"
+import type { BranchName, BranchPair, ProjectId, ProjectName, Result } from "./types.js"
 import { toProjectId } from "./types.js"
 import { FatalError } from "./utils/errors.js"
 import { extractHttpStatus, isFatalError, toErrorMessage } from "./utils/http.js"
@@ -98,7 +98,7 @@ export function parseSkipProjectIds(raw: string | undefined): Set<ProjectId> {
 export async function createMrIfNeeded(
   gitlab: GitlabClient,
   projectId: ProjectId,
-  projectName: string,
+  projectName: ProjectName,
   branchPair: BranchPair,
   dryRun = false,
 ): Promise<Result> {

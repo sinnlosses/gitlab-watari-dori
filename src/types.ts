@@ -4,23 +4,29 @@ export function toProjectId(n: number): ProjectId {
   return n as ProjectId
 }
 
+declare const projectNameBrand: unique symbol
+export type ProjectName = string & { readonly [projectNameBrand]: never }
+export function toProjectName(s: string): ProjectName {
+  return s as ProjectName
+}
+
 declare const branchNameBrand: unique symbol
 export type BranchName = string & { readonly [branchNameBrand]: never }
 export function toBranchName(s: string): BranchName {
   return s as BranchName
 }
 
-declare const gitLabUrlBrand: unique symbol
-export type GitLabUrl = string & { readonly [gitLabUrlBrand]: never }
-
 export type BranchPair = {
   readonly source: BranchName
   readonly target: BranchName
 }
 
+declare const gitLabUrlBrand: unique symbol
+export type GitLabUrl = string & { readonly [gitLabUrlBrand]: never }
+
 export type RepoConfig = {
   readonly projectId: ProjectId
-  readonly projectName: string
+  readonly projectName: ProjectName
   readonly branchPairs: readonly BranchPair[]
 }
 

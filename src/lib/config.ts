@@ -5,7 +5,7 @@ import { load as parseYaml } from "js-yaml"
 import { z } from "zod"
 
 import type { Config } from "../types.js"
-import { toBranchName, toProjectId } from "../types.js"
+import { toBranchName, toProjectId, toProjectName } from "../types.js"
 
 const BranchPairSchema = z
   .object({
@@ -20,7 +20,7 @@ const BranchPairSchema = z
 const RepoConfigSchema = z
   .object({
     project_id: z.number().int().transform(toProjectId),
-    project_name: z.string(),
+    project_name: z.string().transform(toProjectName),
     branch_pairs: z.array(BranchPairSchema),
   })
   .transform((raw) => ({
