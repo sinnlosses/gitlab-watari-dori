@@ -2,11 +2,11 @@
   "name": "gitlab-watari-dori",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/src/main.js",
     "dev": "tsx src/main.ts",
     "lint": "oxlint src && pnpm lint:validate-config",
-    "lint:validate-config": "tsx lint/validate-config.ts",
+    "lint:validate-config": "tsx scripts/lint/validate-config.ts",
     "lint:fix": "oxlint src --fix",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",

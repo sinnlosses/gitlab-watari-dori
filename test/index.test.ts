@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type { MockInstance } from "vitest"
 
 vi.mock("../src/lib/gitlab.js")
 vi.mock("../src/lib/config.js")
@@ -122,7 +123,7 @@ describe("createMrIfNeeded", () => {
 })
 
 describe("main", () => {
-  let exitSpy: ReturnType<typeof vi.spyOn>
+  let exitSpy: MockInstance
 
   beforeEach(() => {
     exitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never)

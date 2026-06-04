@@ -6,12 +6,9 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": true,
-    "declaration": true,
-    "declarationMap": true,
-    "types": ["node"],
-    "rootDir": ".",
-    "outDir": "dist"
+    "noEmit": true,
+    "types": ["node"]
   },
-  "include": ["src/**/*.ts", "lint/**/*.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["dist"]
 }

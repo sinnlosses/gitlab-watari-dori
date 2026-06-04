@@ -1,4 +1,4 @@
-import { loadConfig } from "../src/lib/config.js"
+import { loadConfig } from "../../src/lib/config.js"
 
 const configPath = process.argv[2] ?? "config"
 
