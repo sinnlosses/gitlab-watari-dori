@@ -1,15 +1,15 @@
-<p style="text-align:center">
+<p align="center">
   <img src="assets/logo.svg" alt="gitlab-watari-dori" width="280"/>
 </p>
 
-<h1 style="text-align:center">gitlab-watari-dori</h1>
+<h1 align="center">gitlab-watari-dori</h1>
 
-<p style="text-align:center">
+<p align="center">
   渡り鳥が季節ごとに決まった経路を辿るように、設定されたブランチペアを定期的に巡回し、<br>
   必要なときだけマージリクエストを自動作成します。
 </p>
 
-<p style="text-align:center">
+<p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Node.js-22.x-339933?logo=node.js" alt="Node.js">
