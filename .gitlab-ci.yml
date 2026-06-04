@@ -13,7 +13,7 @@ create-merge-requests:
     paths:
       - $PNPM_STORE_DIR
   script:
-    - corepack enable pnpm
+    - npm install -g pnpm@11.5.1
     - pnpm config set store-dir $PNPM_STORE_DIR
     - pnpm install --frozen-lockfile
     - pnpm check
