@@ -26,18 +26,18 @@ import { timed } from "./utils/timer.js"
 /** MR 作成試行の結果。CREATED: 作成成功、SKIPPED: 条件未達でスキップ、ERROR: 非 fatal なエラー */
 export type Result = "CREATED" | "SKIPPED" | "ERROR"
 
-export async function run(): Promise<void> {
+export async function main(): Promise<void> {
   logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
-  const { duration_ms } = await timed(main)
+  const { duration_ms } = await timed(process)
   logger.info({ event: "run_end", duration_ms })
 }
 
 /**
- * メインロジック。設定ファイルを読み込み、全リポジトリ・ブランチペアに対して
+ * 設定ファイルを読み込み、全リポジトリ・ブランチペアに対して
  * MR 作成を並列実行する。1 件でも ERROR があれば throw する。
  * DRY_RUN=true のときは MR を作成せず、作成対象のログのみ出力する。
  */
-export async function main(): Promise<void> {
+export async function process(): Promise<void> {
   const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
   const { repositories } = loadConfig(CONFIG_PATH)
 

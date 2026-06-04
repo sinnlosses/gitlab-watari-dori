@@ -23,7 +23,7 @@ import {
   createClient,
 } from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
-import { parseSkipProjectIds, createMrIfNeeded, main, run } from "../src/main.js"
+import { parseSkipProjectIds, createMrIfNeeded, main, process as processFn } from "../src/main.js"
 import { FatalError } from "../src/utils/errors.js"
 import { makeHttpError } from "./helpers.js"
 
@@ -192,7 +192,7 @@ describe("createMrIfNeeded", () => {
   })
 })
 
-describe("main", () => {
+describe("process", () => {
   beforeEach(() => {
     vi.mocked(createClient).mockReturnValue(mockGitlab)
     vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
@@ -207,14 +207,14 @@ describe("main", () => {
   })
 
   it("リポジトリがないとき resolve する", async () => {
-    await expect(main()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toBeUndefined()
   })
 
   it("全件 CREATED のとき resolve する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
     })
-    await expect(main()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toBeUndefined()
   })
 
   it("1 件でも ERROR があるとき resolve する", async () => {
@@ -222,7 +222,7 @@ describe("main", () => {
       repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
     })
     vi.mocked(branchExists).mockResolvedValue(false)
-    await expect(main()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toBeUndefined()
   })
 
   it("FatalError が発生したとき reject する", async () => {
@@ -230,11 +230,11 @@ describe("main", () => {
       repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
     })
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
-    await expect(main()).rejects.toThrow()
+    await expect(processFn()).rejects.toThrow()
   })
 
   it("createClient に GITLAB_URL と ACCESS_TOKEN を渡す", async () => {
-    await main()
+    await processFn()
     expect(createClient).toHaveBeenCalledWith("https://gitlab.test", "test-token")
   })
 
@@ -246,7 +246,7 @@ describe("main", () => {
         { projectId: 2, projectName: "repo-b", branchPairs: [branchPair] },
       ],
     })
-    await main()
+    await processFn()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "summary", CREATED: 2, SKIPPED: 0, ERROR: 0 }),
     )
@@ -258,14 +258,14 @@ describe("main", () => {
       repositories: [{ projectId: 1, projectName: "repo-a", branchPairs: [branchPair] }],
     })
     vi.mocked(hasDiff).mockResolvedValue(false)
-    await expect(main()).resolves.toBeUndefined()
+    await expect(processFn()).resolves.toBeUndefined()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "summary", CREATED: 0, SKIPPED: 1, ERROR: 0 }),
     )
   })
 })
 
-describe("run", () => {
+describe("main", () => {
   beforeEach(() => {
     vi.mocked(createClient).mockReturnValue(mockGitlab)
     vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
@@ -281,7 +281,7 @@ describe("run", () => {
 
   it("run_start イベントをログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await run()
+    await main()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_start" }),
     )
@@ -289,7 +289,7 @@ describe("run", () => {
 
   it("run_end イベントに duration_ms を含めてログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await run()
+    await main()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_end", duration_ms: expect.any(Number) }),
     )
