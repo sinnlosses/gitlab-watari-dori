@@ -19,7 +19,7 @@ import {
 } from "./lib/gitlab.js"
 import type { BranchPair } from "./types.js"
 import { FatalError } from "./utils/errors.js"
-import { extractHttpStatus, isFatalStatus, toErrorMessage } from "./utils/http.js"
+import { extractHttpStatus, isFatalError, toErrorMessage } from "./utils/http.js"
 import { logger } from "./utils/logger.js"
 
 /** MR 作成試行の結果。CREATED: 作成成功、SKIPPED: 条件未達でスキップ、ERROR: 非 fatal なエラー */
@@ -31,8 +31,11 @@ export type Result = "CREATED" | "SKIPPED" | "ERROR"
  * DRY_RUN=true のときは MR を作成せず、作成対象のログのみ出力する。
  */
 export async function main(): Promise<void> {
+  const startTime = Date.now()
   const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
   const { repositories } = loadConfig(CONFIG_PATH)
+
+  logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
 
   if (DRY_RUN) {
     logger.info({ event: "dry_run_enabled" })
@@ -88,6 +91,7 @@ export async function main(): Promise<void> {
   )
 
   logger.info({ event: "summary", ...resultCounts })
+  logger.info({ event: "run_end", duration_ms: Date.now() - startTime, ...resultCounts })
   if (resultCounts.ERROR > 0) process.exit(1)
 }
 
@@ -103,7 +107,7 @@ export function parseSkipProjectIds(raw: string | undefined): Set<number> {
       .map((s) => s.trim())
       .filter((s) => s !== "")
       .map(Number)
-      .filter((n) => !Number.isNaN(n)),
+      .filter((n) => Number.isInteger(n) && n > 0),
   )
 }
 
@@ -144,11 +148,11 @@ export async function createMrIfNeeded(
       branchExists(gitlab, projectId, branchPair.target),
     ])
     if (!sourceExists || !targetExists) {
-      logger.error({
-        ...logContext,
-        result: "ERROR",
-        reason: "branch_not_found",
-      })
+      const missingBranches = [
+        !sourceExists ? branchPair.source : null,
+        !targetExists ? branchPair.target : null,
+      ].filter((b): b is string => b !== null)
+      logger.error({ ...logContext, result: "ERROR", reason: "branch_not_found", missingBranches })
       return "ERROR"
     }
     const diffExists = await hasDiff(gitlab, projectId, branchPair)
@@ -164,14 +168,14 @@ export async function createMrIfNeeded(
     logger.info({ ...logContext, result: "CREATED" })
     return "CREATED"
   } catch (err) {
-    const httpStatus = extractHttpStatus(err)
-    if (isFatalStatus(httpStatus)) {
-      throw new FatalError(httpStatus, err)
+    if (isFatalError(err)) {
+      throw new FatalError(extractHttpStatus(err), err)
     }
     logger.error({
       ...logContext,
       result: "ERROR",
       message: toErrorMessage(err),
+      httpStatus: extractHttpStatus(err),
     })
     return "ERROR"
   }

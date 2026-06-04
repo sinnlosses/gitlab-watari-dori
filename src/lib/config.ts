@@ -6,10 +6,14 @@ import { z } from "zod"
 
 import type { Config } from "../types.js"
 
-const BranchPairSchema = z.object({
-  source: z.string(),
-  target: z.string(),
-})
+const BranchPairSchema = z
+  .object({
+    source: z.string().min(1, "source ブランチ名は空にできません"),
+    target: z.string().min(1, "target ブランチ名は空にできません"),
+  })
+  .refine((p) => p.source !== p.target, {
+    message: "source と target に同じブランチは指定できません",
+  })
 
 // YAML は慣習的に snake_case のため、transform で camelCase へ変換する。
 const RepoConfigSchema = z
@@ -28,12 +32,19 @@ const ConfigSchema = z.object({
   repositories: z.array(RepoConfigSchema),
 })
 
+function assertSafePath(inputPath: string): void {
+  if (inputPath.split(/[/\\]/).includes("..")) {
+    throw new Error(`CONFIG_PATH にパストラバーサルは使用できません: "${inputPath}"`)
+  }
+}
+
 /**
  * 設定ファイルまたはディレクトリを読み込む。
  * ディレクトリの場合は .yaml / .yml ファイルをアルファベット順に読み込んで結合する。
  */
 export function loadConfig(configPath?: string): Config {
   const path = configPath ?? "config"
+  assertSafePath(path)
   return statSync(path).isDirectory() ? loadConfigDir(path) : loadConfigFile(path)
 }
 

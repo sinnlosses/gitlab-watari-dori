@@ -2,6 +2,7 @@ import { Gitlab } from "@gitbeaker/rest"
 
 import type { BranchPair } from "../types.js"
 import { isNotFoundError } from "../utils/http.js"
+import { withRetry } from "../utils/retry.js"
 
 export type GitlabClient = InstanceType<typeof Gitlab>
 
@@ -14,13 +15,15 @@ export async function branchExists(
   projectId: number,
   branch: string,
 ): Promise<boolean> {
-  try {
-    await gitlab.Branches.show(projectId, branch)
-    return true
-  } catch (error) {
-    if (isNotFoundError(error)) return false
-    throw error
-  }
+  return withRetry(async () => {
+    try {
+      await gitlab.Branches.show(projectId, branch)
+      return true
+    } catch (error) {
+      if (isNotFoundError(error)) return false
+      throw error
+    }
+  })
 }
 
 export async function hasDiff(
@@ -28,10 +31,9 @@ export async function hasDiff(
   projectId: number,
   branchPair: BranchPair,
 ): Promise<boolean> {
-  const comparison = await gitlab.Repositories.compare(
-    projectId,
-    branchPair.target,
-    branchPair.source,
+  // target を base として source との差分を取得する（source にあって target にないコミットを検出）
+  const comparison = await withRetry(() =>
+    gitlab.Repositories.compare(projectId, branchPair.target, branchPair.source),
   )
   return (comparison.commits?.length ?? 0) > 0
 }
@@ -41,12 +43,14 @@ export async function openMergeRequestExists(
   projectId: number,
   branchPair: BranchPair,
 ): Promise<boolean> {
-  const mergeRequests = await gitlab.MergeRequests.all({
-    projectId,
-    sourceBranch: branchPair.source,
-    targetBranch: branchPair.target,
-    state: "opened",
-  })
+  const mergeRequests = await withRetry(() =>
+    gitlab.MergeRequests.all({
+      projectId,
+      sourceBranch: branchPair.source,
+      targetBranch: branchPair.target,
+      state: "opened",
+    }),
+  )
   return mergeRequests.length > 0
 }
 
@@ -59,10 +63,12 @@ export async function createMergeRequest(
   projectId: number,
   branchPair: BranchPair,
 ): Promise<void> {
-  await gitlab.MergeRequests.create(
-    projectId,
-    branchPair.source,
-    branchPair.target,
-    buildMrTitle(branchPair.source, branchPair.target),
+  await withRetry(() =>
+    gitlab.MergeRequests.create(
+      projectId,
+      branchPair.source,
+      branchPair.target,
+      buildMrTitle(branchPair.source, branchPair.target),
+    ),
   )
 }

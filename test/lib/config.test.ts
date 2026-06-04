@@ -31,6 +31,21 @@ function writeConfigDir(files: Record<string, string>): string {
   return dirPath
 }
 
+describe("loadConfig（パストラバーサル）", () => {
+  it(".. を含む相対パスのとき例外をスローする", () => {
+    expect(() => loadConfig("../../etc/passwd")).toThrow("CONFIG_PATH")
+  })
+
+  it(".. を含む絶対パスのとき例外をスローする", () => {
+    expect(() => loadConfig("/tmp/../etc/passwd")).toThrow("CONFIG_PATH")
+  })
+
+  it(".. を含まない絶対パスは許可する", () => {
+    expect(() => loadConfig("/nonexistent/path/repos.yaml")).toThrow()
+    expect(() => loadConfig("/nonexistent/path/repos.yaml")).not.toThrow("CONFIG_PATH")
+  })
+})
+
 describe("loadConfig（ファイル）", () => {
   it("正常な YAML を camelCase の Config 型にパースする", () => {
     expect(
@@ -115,6 +130,36 @@ repositories:
     project_name: repo
     branch_pairs:
       - target: main
+`),
+      ),
+    ).toThrow("形式が不正です")
+  })
+
+  it("branch_pairs の source が空文字のとき例外をスローする", () => {
+    expect(() =>
+      loadConfig(
+        writeConfigFile(`
+repositories:
+  - project_id: 1
+    project_name: repo
+    branch_pairs:
+      - source: ""
+        target: main
+`),
+      ),
+    ).toThrow("形式が不正です")
+  })
+
+  it("source と target が同じブランチ名のとき例外をスローする", () => {
+    expect(() =>
+      loadConfig(
+        writeConfigFile(`
+repositories:
+  - project_id: 1
+    project_name: repo
+    branch_pairs:
+      - source: main
+        target: main
 `),
       ),
     ).toThrow("形式が不正です")

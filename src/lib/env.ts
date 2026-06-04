@@ -5,7 +5,21 @@ export function loadEnv(key: string): string {
 }
 
 export function loadOptionalEnv(key: string): string | undefined {
-  return process.env[key] || undefined
+  const value = process.env[key]
+  return value?.trim() ? value : undefined
+}
+
+export function validateGitlabUrl(raw: string): string {
+  let url: URL
+  try {
+    url = new URL(raw)
+  } catch {
+    throw new Error(`GITLAB_URL が有効な URL ではありません: "${raw}"`)
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    throw new Error(`GITLAB_URL は http:// または https:// で始まる必要があります: "${raw}"`)
+  }
+  return raw
 }
 
 export function parseConcurrencyLimit(raw: string | undefined): number {
@@ -16,7 +30,7 @@ export function parseConcurrencyLimit(raw: string | undefined): number {
   return value
 }
 
-export const GITLAB_URL = loadEnv("GITLAB_URL")
+export const GITLAB_URL = validateGitlabUrl(loadEnv("GITLAB_URL"))
 export const ACCESS_TOKEN = loadEnv("ACCESS_TOKEN")
 export const SKIP_PROJECT_IDS = loadOptionalEnv("SKIP_PROJECT_IDS")
 export const CONFIG_PATH = loadOptionalEnv("CONFIG_PATH")

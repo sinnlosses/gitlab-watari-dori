@@ -64,4 +64,50 @@ describe("logger", () => {
       expect(logSpy).not.toHaveBeenCalled()
     })
   })
+
+  describe("redact", () => {
+    it("token キーの値を [REDACTED] に置換する", () => {
+      logger.info({ event: "test", token: "secret-value" })
+      const output = JSON.parse(lastLog)
+      expect(output.token).toBe("[REDACTED]")
+    })
+
+    it("access_token キーの値を [REDACTED] に置換する", () => {
+      logger.info({ event: "test", access_token: "my-token" })
+      const output = JSON.parse(lastLog)
+      expect(output.access_token).toBe("[REDACTED]")
+    })
+
+    it("authorization キーの値を [REDACTED] に置換する", () => {
+      logger.error({ event: "test", authorization: "Bearer xyz" })
+      const output = JSON.parse(lastError)
+      expect(output.authorization).toBe("[REDACTED]")
+    })
+
+    it("password キーの値を [REDACTED] に置換する", () => {
+      logger.info({ event: "test", password: "hunter2" })
+      const output = JSON.parse(lastLog)
+      expect(output.password).toBe("[REDACTED]")
+    })
+
+    it("secret キーの値を [REDACTED] に置換する", () => {
+      logger.info({ event: "test", secret: "shh" })
+      const output = JSON.parse(lastLog)
+      expect(output.secret).toBe("[REDACTED]")
+    })
+
+    it("センシティブでないキーはそのまま出力する", () => {
+      logger.info({ event: "mr_created", projectId: 1, result: "CREATED" })
+      const output = JSON.parse(lastLog)
+      expect(output.event).toBe("mr_created")
+      expect(output.projectId).toBe(1)
+      expect(output.result).toBe("CREATED")
+    })
+
+    it("キーの大文字小文字を区別しない", () => {
+      logger.info({ event: "test", ACCESS_TOKEN: "top-secret" })
+      const output = JSON.parse(lastLog)
+      expect(output.ACCESS_TOKEN).toBe("[REDACTED]")
+    })
+  })
 })

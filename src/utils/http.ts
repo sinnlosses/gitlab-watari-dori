@@ -1,3 +1,5 @@
+// @gitbeaker/rest がスローするエラー構造 (Error → cause.response.status) に依存している。
+// ライブラリのメジャーバージョンアップ時はこの構造が変わる可能性がある。
 export function extractHttpStatus(error: unknown): number | undefined {
   if (!(error instanceof Error)) return undefined
   const { cause } = error
@@ -17,6 +19,16 @@ export function isNotFoundError(error: unknown): boolean {
 export function isFatalStatus(status: number | undefined): boolean {
   if (status === undefined) return false
   return status === 401 || status >= 500
+}
+
+// HTTP ステータスのほか、DNS 解決失敗・接続拒否・タイムアウトなどネットワーク障害も
+// 全プロジェクトに影響する致命的エラーとして扱う。
+export function isFatalError(error: unknown): boolean {
+  const status = extractHttpStatus(error)
+  if (status !== undefined) return isFatalStatus(status)
+  if (!(error instanceof Error)) return false
+  const code = (error as NodeJS.ErrnoException).code
+  return code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT"
 }
 
 export function toErrorMessage(error: unknown): string {

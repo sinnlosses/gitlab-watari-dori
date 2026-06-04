@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { loadEnv, loadOptionalEnv, parseConcurrencyLimit } from "../../src/lib/env.js"
+import {
+  loadEnv,
+  loadOptionalEnv,
+  parseConcurrencyLimit,
+  validateGitlabUrl,
+} from "../../src/lib/env.js"
 
 const TEST_KEY = "WATARI_DORI_TEST_VAR"
 
@@ -50,6 +55,33 @@ describe("loadOptionalEnv", () => {
   it("空文字のとき undefined を返す", () => {
     process.env[TEST_KEY] = ""
     expect(loadOptionalEnv(TEST_KEY)).toBeUndefined()
+  })
+
+  it("スペースのみのとき undefined を返す", () => {
+    process.env[TEST_KEY] = "   "
+    expect(loadOptionalEnv(TEST_KEY)).toBeUndefined()
+  })
+})
+
+describe("validateGitlabUrl", () => {
+  it("https:// の URL を受け入れる", () => {
+    expect(validateGitlabUrl("https://gitlab.example.com")).toBe("https://gitlab.example.com")
+  })
+
+  it("http:// の URL を受け入れる", () => {
+    expect(validateGitlabUrl("http://gitlab.internal")).toBe("http://gitlab.internal")
+  })
+
+  it("有効でない URL のとき例外をスローする", () => {
+    expect(() => validateGitlabUrl("not-a-url")).toThrow("GITLAB_URL")
+  })
+
+  it("file:// スキームのとき例外をスローする", () => {
+    expect(() => validateGitlabUrl("file:///etc/passwd")).toThrow("GITLAB_URL")
+  })
+
+  it("ftp:// スキームのとき例外をスローする", () => {
+    expect(() => validateGitlabUrl("ftp://gitlab.example.com")).toThrow("GITLAB_URL")
   })
 })
 

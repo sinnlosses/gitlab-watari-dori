@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   extractHttpStatus,
+  isFatalError,
   isFatalStatus,
   isNotFoundError,
   toErrorMessage,
@@ -79,6 +80,48 @@ describe("isFatalStatus", () => {
 
   it("402 (fatal リストにない) のとき false を返す", () => {
     expect(isFatalStatus(402)).toBe(false)
+  })
+})
+
+describe("isFatalError", () => {
+  it("HTTP 401 エラーのとき true を返す", () => {
+    expect(isFatalError(makeHttpError(401))).toBe(true)
+  })
+
+  it("HTTP 500 エラーのとき true を返す", () => {
+    expect(isFatalError(makeHttpError(500))).toBe(true)
+  })
+
+  it("HTTP 403 エラーのとき false を返す", () => {
+    expect(isFatalError(makeHttpError(403))).toBe(false)
+  })
+
+  it("HTTP 404 エラーのとき false を返す", () => {
+    expect(isFatalError(makeHttpError(404))).toBe(false)
+  })
+
+  it("ECONNREFUSED のとき true を返す", () => {
+    const err = Object.assign(new Error("connect ECONNREFUSED"), { code: "ECONNREFUSED" })
+    expect(isFatalError(err)).toBe(true)
+  })
+
+  it("ENOTFOUND のとき true を返す", () => {
+    const err = Object.assign(new Error("getaddrinfo ENOTFOUND"), { code: "ENOTFOUND" })
+    expect(isFatalError(err)).toBe(true)
+  })
+
+  it("ETIMEDOUT のとき true を返す", () => {
+    const err = Object.assign(new Error("connect ETIMEDOUT"), { code: "ETIMEDOUT" })
+    expect(isFatalError(err)).toBe(true)
+  })
+
+  it("HTTP ステータスも code もない通常の Error のとき false を返す", () => {
+    expect(isFatalError(new Error("generic error"))).toBe(false)
+  })
+
+  it("Error でない値のとき false を返す", () => {
+    expect(isFatalError("string error")).toBe(false)
+    expect(isFatalError(null)).toBe(false)
   })
 })
 

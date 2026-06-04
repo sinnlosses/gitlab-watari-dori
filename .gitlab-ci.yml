@@ -14,6 +14,9 @@ variables:
   SKIP_PROJECT_IDS: $[[ inputs.skip_project_ids ]]
   PNPM_STORE_DIR: .pnpm-store
 
+# ACCESS_TOKEN は GitLab CI/CD Variables で Masked + Protected に設定すること。
+# 設定方法: Settings > CI/CD > Variables > ACCESS_TOKEN (Masked: ON, Protected: ON)
+
 .node-setup:
   image: node:22.13-alpine
   cache:
@@ -23,9 +26,19 @@ variables:
     paths:
       - $PNPM_STORE_DIR
   before_script:
-    - npm install -g pnpm@11.5.1
+    - corepack enable
+    - corepack prepare pnpm@11.5.1 --activate
     - pnpm config set store-dir $PNPM_STORE_DIR
     - pnpm install --frozen-lockfile
+
+audit:
+  extends: .node-setup
+  script:
+    - pnpm audit --audit-level=high
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  allow_failure: true
 
 check:
   extends: .node-setup
