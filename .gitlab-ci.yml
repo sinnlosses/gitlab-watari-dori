@@ -36,9 +36,6 @@ variables:
     description: "【必須】GitLab インスタンスの URL（例: https://gitlab.example.com）"
   DRY_RUN:
     value: "$[[ inputs.dry_run ]]"
-    options:
-      - "false"
-      - "true"
     description: "true にすると MR を作成せずログのみ出力します（デフォルト: false）"
   SKIP_PROJECT_IDS:
     value: "$[[ inputs.skip_project_ids ]]"
