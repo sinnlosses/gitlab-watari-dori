@@ -18,3 +18,5 @@ dist/
 .DS_Store
 
 .idea/
+
+./test-results.xml

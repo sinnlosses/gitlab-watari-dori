@@ -17,7 +17,7 @@ const BranchPairSchema = z
   })
 
 // YAML は慣習的に snake_case のため、transform で camelCase へ変換する。
-const RepoConfigSchema = z
+const RepositorySchema = z
   .object({
     project_id: z.number().int().transform(toProjectId),
     project_name: z.string().transform(toProjectName),
@@ -30,7 +30,7 @@ const RepoConfigSchema = z
   }))
 
 const ConfigSchema = z.object({
-  repositories: z.array(RepoConfigSchema),
+  repositories: z.array(RepositorySchema),
 })
 
 function assertSafePath(inputPath: string): void {
