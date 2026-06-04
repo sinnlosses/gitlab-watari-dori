@@ -140,6 +140,7 @@ export async function createMrIfNeeded(
       logger.info({ ...logContext, result: "SKIPPED", reason: "mr_exists" })
       return "SKIPPED"
     }
+
     await createMergeRequest(gitlab, projectId, branchPair)
     logger.info({ ...logContext, result: "CREATED" })
     return "CREATED"
