@@ -24,11 +24,12 @@ import {
 } from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
 import { parseSkipProjectIds, createMrIfNeeded, main, process as processFn } from "../src/main.js"
+import { toBranchName, toProjectId } from "../src/types.js"
 import { FatalError } from "../src/utils/errors.js"
 import { makeHttpError } from "./helpers.js"
 
 const mockGitlab = {} as unknown as GitlabClient
-const branchPair = { source: "develop", target: "main" }
+const branchPair = { source: toBranchName("develop"), target: toBranchName("main") }
 
 describe("parseSkipProjectIds", () => {
   it("undefined のとき空の Set を返す", () => {
@@ -85,48 +86,50 @@ describe("createMrIfNeeded", () => {
   })
 
   it("MR 作成に成功したとき 'CREATED' を返す", async () => {
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("CREATED")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("CREATED")
     expect(createMergeRequest).toHaveBeenCalledOnce()
   })
 
   it("dryRun=true のとき MR を作成せず 'SKIPPED' を返す", async () => {
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair, true)).toBe("SKIPPED")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair, true)).toBe(
+      "SKIPPED",
+    )
     expect(createMergeRequest).not.toHaveBeenCalled()
   })
 
   it("source ブランチが存在しないとき 'ERROR' を返す", async () => {
     vi.mocked(branchExists).mockImplementation(async (_client, _id, branch) => branch !== "develop")
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("ERROR")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("ERROR")
     expect(createMergeRequest).not.toHaveBeenCalled()
   })
 
   it("target ブランチが存在しないとき 'ERROR' を返す", async () => {
     vi.mocked(branchExists).mockImplementation(async (_client, _id, branch) => branch !== "main")
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("ERROR")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("ERROR")
     expect(createMergeRequest).not.toHaveBeenCalled()
   })
 
   it("差分がないとき 'SKIPPED' を返す", async () => {
     vi.mocked(hasDiff).mockResolvedValue(false)
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("SKIPPED")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("SKIPPED")
     expect(createMergeRequest).not.toHaveBeenCalled()
   })
 
   it("オープン中の MR が既に存在するとき 'SKIPPED' を返す", async () => {
     vi.mocked(openMergeRequestExists).mockResolvedValue(true)
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("SKIPPED")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("SKIPPED")
     expect(createMergeRequest).not.toHaveBeenCalled()
   })
 
   it("非 fatal な API エラーのとき 'ERROR' を返す", async () => {
     vi.mocked(branchExists).mockRejectedValue(new Error("Network error"))
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("ERROR")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("ERROR")
   })
 
   it("source ブランチが存在しないとき欠損ブランチ名をログに含める", async () => {
     const { logger } = await import("../src/utils/logger.js")
     vi.mocked(branchExists).mockImplementation(async (_client, _id, branch) => branch !== "develop")
-    await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)
+    await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)
     expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
       expect.objectContaining({ reason: expect.stringContaining("develop") }),
     )
@@ -135,7 +138,7 @@ describe("createMrIfNeeded", () => {
   it("両ブランチが存在しないとき両方の欠損ブランチ名をログに含める", async () => {
     const { logger } = await import("../src/utils/logger.js")
     vi.mocked(branchExists).mockResolvedValue(false)
-    await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)
+    await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)
     expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
       expect.objectContaining({ reason: expect.stringContaining("develop,main") }),
     )
@@ -144,7 +147,7 @@ describe("createMrIfNeeded", () => {
   it("非 fatal な HTTP エラーのとき httpStatus をエラーログに含める", async () => {
     const { logger } = await import("../src/utils/logger.js")
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(403))
-    await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)
+    await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)
     expect(vi.mocked(logger.error)).toHaveBeenCalledWith(
       expect.objectContaining({ reason: expect.stringContaining("403") }),
     )
@@ -152,24 +155,30 @@ describe("createMrIfNeeded", () => {
 
   it.each([401, 500])("HTTP %i エラーのとき FatalError をスローする", async (status) => {
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(status))
-    await expect(createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).rejects.toThrow(FatalError)
+    await expect(createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).rejects.toThrow(
+      FatalError,
+    )
   })
 
   it("HTTP 401 エラーのとき FatalError.httpStatus が 401 になる", async () => {
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
-    const err = await createMrIfNeeded(mockGitlab, 1, "repo", branchPair).catch((e) => e)
+    const err = await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair).catch(
+      (e) => e,
+    )
     expect(err).toBeInstanceOf(FatalError)
     expect(err.httpStatus).toBe(401)
   })
 
   it("createMergeRequest が 403 エラーを投げたとき 'ERROR' を返す", async () => {
     vi.mocked(createMergeRequest).mockRejectedValue(makeHttpError(403))
-    expect(await createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).toBe("ERROR")
+    expect(await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).toBe("ERROR")
   })
 
   it("createMergeRequest が 500 エラーを投げたとき FatalError をスローする", async () => {
     vi.mocked(createMergeRequest).mockRejectedValue(makeHttpError(500))
-    const err = await createMrIfNeeded(mockGitlab, 1, "repo", branchPair).catch((e) => e)
+    const err = await createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair).catch(
+      (e) => e,
+    )
     expect(err).toBeInstanceOf(FatalError)
     expect(err.httpStatus).toBe(500)
   })
@@ -182,13 +191,17 @@ describe("createMrIfNeeded", () => {
     ],
   ] as const)("%s が fatal エラーのとき FatalError をスローする", async (_name, setup) => {
     setup()
-    await expect(createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).rejects.toThrow(FatalError)
+    await expect(createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).rejects.toThrow(
+      FatalError,
+    )
   })
 
   it("ネットワーク障害（ECONNREFUSED）のとき FatalError をスローする", async () => {
     const err = Object.assign(new Error("connect ECONNREFUSED"), { code: "ECONNREFUSED" })
     vi.mocked(branchExists).mockRejectedValue(err)
-    await expect(createMrIfNeeded(mockGitlab, 1, "repo", branchPair)).rejects.toThrow(FatalError)
+    await expect(createMrIfNeeded(mockGitlab, toProjectId(1), "repo", branchPair)).rejects.toThrow(
+      FatalError,
+    )
   })
 })
 
@@ -212,14 +225,14 @@ describe("process", () => {
 
   it("全件 CREATED のとき resolve する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
-      repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
+      repositories: [{ projectId: toProjectId(1), projectName: "repo", branchPairs: [branchPair] }],
     })
     await expect(processFn()).resolves.toBeUndefined()
   })
 
   it("1 件でも ERROR があるとき resolve する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
-      repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
+      repositories: [{ projectId: toProjectId(1), projectName: "repo", branchPairs: [branchPair] }],
     })
     vi.mocked(branchExists).mockResolvedValue(false)
     await expect(processFn()).resolves.toBeUndefined()
@@ -227,7 +240,7 @@ describe("process", () => {
 
   it("FatalError が発生したとき reject する", async () => {
     vi.mocked(loadConfig).mockReturnValue({
-      repositories: [{ projectId: 1, projectName: "repo", branchPairs: [branchPair] }],
+      repositories: [{ projectId: toProjectId(1), projectName: "repo", branchPairs: [branchPair] }],
     })
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
     await expect(processFn()).rejects.toThrow()
@@ -242,8 +255,8 @@ describe("process", () => {
     const { logger } = await import("../src/utils/logger.js")
     vi.mocked(loadConfig).mockReturnValue({
       repositories: [
-        { projectId: 1, projectName: "repo-a", branchPairs: [branchPair] },
-        { projectId: 2, projectName: "repo-b", branchPairs: [branchPair] },
+        { projectId: toProjectId(1), projectName: "repo-a", branchPairs: [branchPair] },
+        { projectId: toProjectId(2), projectName: "repo-b", branchPairs: [branchPair] },
       ],
     })
     await processFn()
@@ -255,7 +268,9 @@ describe("process", () => {
   it("一部 SKIPPED を含む場合 summary の件数が正しい", async () => {
     const { logger } = await import("../src/utils/logger.js")
     vi.mocked(loadConfig).mockReturnValue({
-      repositories: [{ projectId: 1, projectName: "repo-a", branchPairs: [branchPair] }],
+      repositories: [
+        { projectId: toProjectId(1), projectName: "repo-a", branchPairs: [branchPair] },
+      ],
     })
     vi.mocked(hasDiff).mockResolvedValue(false)
     await expect(processFn()).resolves.toBeUndefined()

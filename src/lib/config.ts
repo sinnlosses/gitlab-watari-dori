@@ -5,11 +5,12 @@ import { load as parseYaml } from "js-yaml"
 import { z } from "zod"
 
 import type { Config } from "../types.js"
+import { toBranchName, toProjectId } from "../types.js"
 
 const BranchPairSchema = z
   .object({
-    source: z.string().min(1, "source ブランチ名は空にできません"),
-    target: z.string().min(1, "target ブランチ名は空にできません"),
+    source: z.string().min(1, "source ブランチ名は空にできません").transform(toBranchName),
+    target: z.string().min(1, "target ブランチ名は空にできません").transform(toBranchName),
   })
   .refine((p) => p.source !== p.target, {
     message: "source と target に同じブランチは指定できません",
@@ -18,7 +19,7 @@ const BranchPairSchema = z
 // YAML は慣習的に snake_case のため、transform で camelCase へ変換する。
 const RepoConfigSchema = z
   .object({
-    project_id: z.number().int(),
+    project_id: z.number().int().transform(toProjectId),
     project_name: z.string(),
     branch_pairs: z.array(BranchPairSchema),
   })

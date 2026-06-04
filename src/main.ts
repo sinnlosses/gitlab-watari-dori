@@ -17,14 +17,12 @@ import {
   openMergeRequestExists,
   createMergeRequest,
 } from "./lib/gitlab.js"
-import type { BranchPair } from "./types.js"
+import type { BranchName, BranchPair, ProjectId, Result } from "./types.js"
+import { toProjectId } from "./types.js"
 import { FatalError } from "./utils/errors.js"
 import { extractHttpStatus, isFatalError, toErrorMessage } from "./utils/http.js"
 import { logger } from "./utils/logger.js"
 import { timed } from "./utils/timer.js"
-
-/** MR 作成試行の結果。CREATED: 作成成功、SKIPPED: 条件未達でスキップ、ERROR: 非 fatal なエラー */
-export type Result = "CREATED" | "SKIPPED" | "ERROR"
 
 export async function main(): Promise<void> {
   logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
@@ -70,7 +68,7 @@ export async function process(): Promise<void> {
  * カンマ区切りの文字列をプロジェクト ID の Set に変換する。
  * 数値に変換できない値や空セグメントは除外する。
  */
-export function parseSkipProjectIds(raw: string | undefined): Set<number> {
+export function parseSkipProjectIds(raw: string | undefined): Set<ProjectId> {
   if (!raw?.trim()) return new Set()
   return new Set(
     raw
@@ -78,7 +76,8 @@ export function parseSkipProjectIds(raw: string | undefined): Set<number> {
       .map((s) => s.trim())
       .filter((s) => s !== "")
       .map(Number)
-      .filter((n) => Number.isInteger(n) && n > 0),
+      .filter((n) => Number.isInteger(n) && n > 0)
+      .map(toProjectId),
   )
 }
 
@@ -98,7 +97,7 @@ export function parseSkipProjectIds(raw: string | undefined): Set<number> {
  */
 export async function createMrIfNeeded(
   gitlab: GitlabClient,
-  projectId: number,
+  projectId: ProjectId,
   projectName: string,
   branchPair: BranchPair,
   dryRun = false,
@@ -123,7 +122,7 @@ export async function createMrIfNeeded(
       const missingBranches = [
         !sourceExists ? branchPair.source : null,
         !targetExists ? branchPair.target : null,
-      ].filter((b): b is string => b !== null)
+      ].filter((b): b is BranchName => b !== null)
       logger.error({
         ...logContext,
         result: "ERROR",

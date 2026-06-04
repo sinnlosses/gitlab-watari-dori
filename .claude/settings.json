@@ -1,4 +1,17 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run check *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm check *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm audit *)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm tsc *)",
+      "WebFetch(*)",
+      "WebSearch(*)"
+    ]
+  },
   "hooks": {
     "Stop": [
       {

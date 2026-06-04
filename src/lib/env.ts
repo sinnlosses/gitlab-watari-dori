@@ -1,3 +1,5 @@
+import type { GitLabUrl } from "../types.js"
+
 export function loadEnv(key: string): string {
   const value = process.env[key]
   if (!value?.trim()) throw new Error(`環境変数 ${key} が未設定です`)
@@ -9,7 +11,8 @@ export function loadOptionalEnv(key: string): string | undefined {
   return value?.trim() ? value : undefined
 }
 
-export function validateGitlabUrl(raw: string): string {
+/** as キャストはこの smart constructor 内だけ許容する。 */
+export function validateGitlabUrl(raw: string): GitLabUrl {
   let url: URL
   try {
     url = new URL(raw)
@@ -19,7 +22,7 @@ export function validateGitlabUrl(raw: string): string {
   if (url.protocol !== "https:" && url.protocol !== "http:") {
     throw new Error(`GITLAB_URL は http:// または https:// で始まる必要があります: "${raw}"`)
   }
-  return raw
+  return raw as GitLabUrl
 }
 
 export function parseConcurrencyLimit(raw: string | undefined): number {

@@ -1,19 +1,19 @@
 import { Gitlab } from "@gitbeaker/rest"
 
-import type { BranchPair } from "../types.js"
+import type { BranchName, BranchPair, GitLabUrl, ProjectId } from "../types.js"
 import { isNotFoundError } from "../utils/http.js"
 import { withRetry } from "../utils/retry.js"
 
 export type GitlabClient = InstanceType<typeof Gitlab>
 
-export function createClient(host: string, token: string): GitlabClient {
+export function createClient(host: GitLabUrl, token: string): GitlabClient {
   return new Gitlab({ host, token })
 }
 
 export async function branchExists(
   gitlab: GitlabClient,
-  projectId: number,
-  branch: string,
+  projectId: ProjectId,
+  branch: BranchName,
 ): Promise<boolean> {
   return withRetry(async () => {
     try {
@@ -28,7 +28,7 @@ export async function branchExists(
 
 export async function hasDiff(
   gitlab: GitlabClient,
-  projectId: number,
+  projectId: ProjectId,
   branchPair: BranchPair,
 ): Promise<boolean> {
   // target を base として source との差分を取得する（source にあって target にないコミットを検出）
@@ -40,7 +40,7 @@ export async function hasDiff(
 
 export async function openMergeRequestExists(
   gitlab: GitlabClient,
-  projectId: number,
+  projectId: ProjectId,
   branchPair: BranchPair,
 ): Promise<boolean> {
   const mergeRequests = await withRetry(() =>
@@ -60,7 +60,7 @@ function buildMrTitle(source: string, target: string): string {
 
 export async function createMergeRequest(
   gitlab: GitlabClient,
-  projectId: number,
+  projectId: ProjectId,
   branchPair: BranchPair,
 ): Promise<void> {
   await withRetry(() =>
