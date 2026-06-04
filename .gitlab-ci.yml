@@ -1,16 +1,14 @@
 spec:
   inputs:
     dry_run:
-      description: 'MR を作成せずログのみ出力する（true のとき MR は作成されません）'
-      default: 'false'
+      description: "MR を作成せずログのみ出力する（true のとき MR は作成されません）"
+      default: "false"
       type: boolean
     skip_project_ids:
       description: 'MR 作成をスキップするプロジェクト ID（カンマ区切り、例: "123,456"）'
-      default: ''
+      default: ""
       type: string
-
 ---
-
 variables:
   DRY_RUN: $[[ inputs.dry_run ]]
   SKIP_PROJECT_IDS: $[[ inputs.skip_project_ids ]]
