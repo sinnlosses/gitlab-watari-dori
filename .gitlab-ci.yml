@@ -11,7 +11,6 @@ spec:
 ---
 variables:
   DRY_RUN: $[[ inputs.dry_run ]]
-  SKIP_PROJECT_IDS: $[[ inputs.skip_project_ids ]]
   PNPM_STORE_DIR: .pnpm-store
 
 # ACCESS_TOKEN は GitLab CI/CD Variables で Masked + Protected に設定すること。
@@ -58,5 +57,8 @@ create-merge-requests:
     - pnpm start
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      # SKIP_PROJECT_IDS はスケジュール設定の Variables で指定してください
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual
+      variables:
+        SKIP_PROJECT_IDS: $[[ inputs.skip_project_ids ]]
