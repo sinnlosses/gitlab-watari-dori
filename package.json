@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check": "tsc --noEmit && oxlint src && oxfmt . --check && vitest run && pnpm validate-config"
+    "check": "tsc --noEmit && oxlint src && oxfmt . --check && vitest run && pnpm lint:validate-config"
   },
   "dependencies": {
     "@gitbeaker/rest": "^41.0.0",
