@@ -17,9 +17,6 @@ export const logger = {
   info(fields: Record<string, unknown>): void {
     console.log(formatLog("info", fields))
   },
-  warn(fields: Record<string, unknown>): void {
-    console.warn(formatLog("warn", fields))
-  },
   error(fields: Record<string, unknown>): void {
     console.error(formatLog("error", fields))
   },

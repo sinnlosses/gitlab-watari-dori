@@ -114,8 +114,8 @@ GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm start
 ```
 .
 ├── src/
-│   ├── main.ts           # エントリポイント
-│   ├── index.ts          # メインロジック・エクスポート
+│   ├── index.ts          # エントリポイント
+│   ├── main.ts           # メインロジック・エクスポート
 │   ├── types.ts          # 型定義
 │   ├── lib/
 │   │   ├── gitlab.ts     # GitLab API クライアント操作
@@ -126,7 +126,7 @@ GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm start
 │       ├── http.ts       # HTTP エラーハンドリングユーティリティ
 │       └── logger.ts     # 構造化 JSON ロガー
 ├── test/                 # テスト
-├── config/         # 対象リポジトリ設定（チームごとにファイルを分割）
+├── config/         # 対象リポジトリ設定（複数ファイルに分割）
 ├── .gitlab-ci.yml        # CI ジョブ定義
 └── package.json
 ```

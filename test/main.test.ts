@@ -15,7 +15,6 @@ vi.mock("../src/utils/logger.js", () => ({
   logger: { info: vi.fn(), error: vi.fn() },
 }))
 
-import { parseSkipProjectIds, createMrIfNeeded, main } from "../src/index.js"
 import { loadConfig } from "../src/lib/config.js"
 import {
   branchExists,
@@ -25,6 +24,7 @@ import {
   createClient,
 } from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
+import { parseSkipProjectIds, createMrIfNeeded, main } from "../src/main.js"
 import { FatalError } from "../src/utils/errors.js"
 import { makeHttpError } from "./helpers.js"
 
