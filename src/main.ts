@@ -32,7 +32,14 @@ import { logger } from "./utils/logger.js"
 import { timed } from "./utils/timer.js"
 
 export async function run(): Promise<RunResult> {
-  logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
+  logger.info({
+    event: "run_start",
+    gitlabUrl: GITLAB_URL,
+    dryRun: DRY_RUN,
+    concurrencyLimit: CONCURRENCY_LIMIT,
+    skipProjectIds: SKIP_PROJECT_IDS,
+    configPath: CONFIG_PATH,
+  })
   const { value: resultCounts, duration_ms } = await timed(process)
   logger.info({ event: "summary", ...resultCounts })
   logger.info({ event: "run_end", duration_ms })
@@ -110,12 +117,7 @@ export async function createMrIfNeeded(
   branchPair: BranchPair,
   dryRun = false,
 ): Promise<MrCreationResult> {
-  const logContext = {
-    projectId,
-    projectName,
-    source: branchPair.source,
-    target: branchPair.target,
-  }
+  const logContext = { projectId, projectName, source: branchPair.source, target: branchPair.target }
 
   try {
     const [sourceExists, targetExists] = await Promise.all([
