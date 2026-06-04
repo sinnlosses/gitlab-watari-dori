@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/lib/gitlab.js")
 vi.mock("../src/lib/config.js")
+vi.mock("../src/lib/env.js", () => ({
+  GITLAB_URL: "https://gitlab.test",
+  ACCESS_TOKEN: "test-token",
+  SKIP_PROJECT_IDS: undefined,
+  CONFIG_PATH: undefined,
+  CONCURRENCY_LIMIT: 5,
+  DRY_RUN: false,
+}))
 vi.mock("../src/utils/logger.js", () => ({
   logger: { info: vi.fn(), error: vi.fn() },
 }))
