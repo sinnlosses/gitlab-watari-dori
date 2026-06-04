@@ -1,11 +1,19 @@
 spec:
   inputs:
-    dry_run:
+    DRY_RUN:
       description: "MR を作成せずログのみ出力する（true のとき MR は作成されません）"
       default: "false"
       type: boolean
-    skip_project_ids:
+    SKIP_PROJECT_IDS:
       description: 'MR 作成をスキップするプロジェクト ID（カンマ区切り、例: "123,456"）'
+      default: ""
+      type: string
+    CONCURRENCY_LIMIT:
+      description: "同時 API リクエスト数（1〜20 の整数）"
+      default: "5"
+      type: string
+    CONFIG_PATH:
+      description: "設定ファイルのパス（省略時はデフォルト: config.yaml）"
       default: ""
       type: string
 ---
@@ -35,16 +43,16 @@ variables:
     value: ""
     description: "【必須】GitLab インスタンスの URL（例: https://gitlab.example.com）"
   DRY_RUN:
-    value: "$[[ inputs.dry_run ]]"
+    value: "$[[ inputs.DRY_RUN ]]"
     description: "true にすると MR を作成せずログのみ出力します（デフォルト: false）"
   SKIP_PROJECT_IDS:
-    value: "$[[ inputs.skip_project_ids ]]"
+    value: "$[[ inputs.SKIP_PROJECT_IDS ]]"
     description: "MR 作成をスキップするプロジェクト ID（カンマ区切り、例: 123,456）省略可"
   CONCURRENCY_LIMIT:
-    value: "5"
+    value: "$[[ inputs.CONCURRENCY_LIMIT ]]"
     description: "同時 API リクエスト数（1〜20 の整数、デフォルト: 5）省略可"
   CONFIG_PATH:
-    value: ""
+    value: "$[[ inputs.CONFIG_PATH ]]"
     description: "設定ファイルのパス（省略時はデフォルト: config.yaml）省略可"
   PNPM_STORE_DIR:
     value: .pnpm-store
