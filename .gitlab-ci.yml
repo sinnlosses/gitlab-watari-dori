@@ -14,7 +14,7 @@ variables:
   SKIP_PROJECT_IDS: $[[ inputs.skip_project_ids ]]
   PNPM_STORE_DIR: .pnpm-store
 
-create-merge-requests:
+.node-setup:
   image: node:22.13-alpine
   cache:
     key:
@@ -22,10 +22,23 @@ create-merge-requests:
         - pnpm-lock.yaml
     paths:
       - $PNPM_STORE_DIR
-  script:
+  before_script:
     - npm install -g pnpm@11.5.1
     - pnpm config set store-dir $PNPM_STORE_DIR
     - pnpm install --frozen-lockfile
+
+check:
+  extends: .node-setup
+  script:
+    - pnpm check
+    - pnpm build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+create-merge-requests:
+  extends: .node-setup
+  script:
     - pnpm check
     - pnpm build
     - pnpm start
