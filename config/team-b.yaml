@@ -1,11 +1,8 @@
 repositories:
-  - project_id: 456
-    project_name: my-service-b
+  - project_id: 82861978
+    project_name: sample-qa-sprint
     branch_pairs:
-      - source: 2026/1
-        target: 2026/2
-  - project_id: 789
-    project_name: my-service-c
-    branch_pairs:
-      - source: develop
-        target: main
+      - source: qa/2601
+        target: qa/2601-f
+      - source: qa/2601-f
+        target: qa/2607
