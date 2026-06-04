@@ -110,4 +110,12 @@ describe("parseConcurrencyLimit", () => {
   it("数値に変換できない文字列のとき例外をスローする", () => {
     expect(() => parseConcurrencyLimit("abc")).toThrow("CONCURRENCY_LIMIT")
   })
+
+  it("20 のとき正常に変換する", () => {
+    expect(parseConcurrencyLimit("20")).toBe(20)
+  })
+
+  it("21 のとき例外をスローする", () => {
+    expect(() => parseConcurrencyLimit("21")).toThrow("CONCURRENCY_LIMIT")
+  })
 })

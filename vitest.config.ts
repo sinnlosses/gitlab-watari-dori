@@ -7,6 +7,10 @@ export default defineConfig({
       GITLAB_URL: "https://gitlab.test",
       ACCESS_TOKEN: "test-token",
     },
+    reporters: ["verbose", "junit"],
+    outputFile: {
+      junit: "test-results.xml",
+    },
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],

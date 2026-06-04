@@ -26,8 +26,8 @@ export function validateGitlabUrl(raw: string): GitLabUrl {
 
 export function parseConcurrencyLimit(raw: string | undefined): number {
   const value = Number(raw ?? "5")
-  if (!Number.isInteger(value) || value < 1) {
-    throw new Error(`CONCURRENCY_LIMIT は 1 以上の整数である必要があります: "${raw}"`)
+  if (!Number.isInteger(value) || value < 1 || value > 20) {
+    throw new Error(`CONCURRENCY_LIMIT は 1〜20 の整数である必要があります: "${raw}"`)
   }
   return value
 }

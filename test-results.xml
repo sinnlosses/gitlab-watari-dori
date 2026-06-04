@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="159" failures="0" errors="0" time="0.121971374">
+    <testsuite name="test/index.test.ts" timestamp="2026-06-04T19:08:55.696Z" hostname="MacBook-Pro-2.local" tests="4" failures="0" errors="0" skipped="0" time="0.047343375">
+        <testcase classname="test/index.test.ts" name="index &gt; run が &quot;SUCCESS&quot; を返したとき process.exit(0) を呼ぶ" time="0.02160075">
+        </testcase>
+        <testcase classname="test/index.test.ts" name="index &gt; run が &quot;PARTIAL_FAILURE&quot; を返したとき process.exit(1) を呼ぶ" time="0.009303417">
+        </testcase>
+        <testcase classname="test/index.test.ts" name="index &gt; FatalError のとき httpStatus と message をログに出力して process.exit(1) を呼ぶ" time="0.008519334">
+        </testcase>
+        <testcase classname="test/index.test.ts" name="index &gt; FatalError 以外のとき message を文字列化してログに出力して process.exit(1) を呼ぶ" time="0.007029917">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/main-integration.test.ts" timestamp="2026-06-04T19:08:55.697Z" hostname="MacBook-Pro-2.local" tests="5" failures="0" errors="0" skipped="0" time="0.003499416">
+        <testcase classname="test/main-integration.test.ts" name="process - SKIP_PROJECT_IDS 統合 &gt; SKIP_PROJECT_IDS に含まれるプロジェクトは branchExists を呼び出さない" time="0.001880708">
+        </testcase>
+        <testcase classname="test/main-integration.test.ts" name="process - SKIP_PROJECT_IDS 統合 &gt; SKIP_PROJECT_IDS に含まれるプロジェクトを除いた件数を返す" time="0.000436708">
+        </testcase>
+        <testcase classname="test/main-integration.test.ts" name="process - DRY_RUN 統合 &gt; DRY_RUN=true のとき全ペアが SKIPPED になる" time="0.000313709">
+        </testcase>
+        <testcase classname="test/main-integration.test.ts" name="process - DRY_RUN 統合 &gt; DRY_RUN=true のとき createMergeRequest を一切呼び出さない" time="0.000111417">
+        </testcase>
+        <testcase classname="test/main-integration.test.ts" name="process - CONCURRENCY_LIMIT 統合 &gt; pLimit を CONCURRENCY_LIMIT の値で呼び出す" time="0.000101">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/main.test.ts" timestamp="2026-06-04T19:08:55.697Z" hostname="MacBook-Pro-2.local" tests="46" failures="0" errors="0" skipped="0" time="0.008615875">
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; undefined のとき空の Set を返す" time="0.00079925">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 空文字のとき空の Set を返す" time="0.000120584">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; スペースのみのとき空の Set を返す" time="0.000063792">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 単一の ID をパースする" time="0.000114625">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; カンマ区切りの複数 ID をパースする" time="0.000063041">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 各 ID の前後のスペースを除去する" time="0.000051084">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 数値に変換できない値を除外する" time="0.000114541">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 連続するカンマによる空セグメントを除外する" time="0.000049875">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 小数を除外する" time="0.000311875">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="parseSkipProjectIds &gt; 0 以下の値を除外する" time="0.000072542">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; MR 作成に成功したとき &apos;CREATED&apos; を返す" time="0.000415166">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true のとき MR を作成せず &apos;SKIPPED&apos; を返す" time="0.000257792">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true のとき branchExists を呼び出す" time="0.0000645">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true のとき hasDiff を呼び出す" time="0.000049708">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true のとき openMergeRequestExists を呼び出す" time="0.000080583">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true かつ差分がないとき &apos;SKIPPED&apos;(no_diff) を返す" time="0.000697875">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true かつ MR が既存のとき &apos;SKIPPED&apos;(mr_exists) を返す" time="0.000177916">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; dryRun=true かつブランチが存在しないとき &apos;ERROR&apos; を返す" time="0.000054667">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; source ブランチが存在しないとき &apos;ERROR&apos; を返す" time="0.000065333">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; target ブランチが存在しないとき &apos;ERROR&apos; を返す" time="0.000059125">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; 差分がないとき &apos;SKIPPED&apos; を返す" time="0.000102459">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; オープン中の MR が既に存在するとき &apos;SKIPPED&apos; を返す" time="0.0000555">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; 非 fatal な API エラーのとき &apos;ERROR&apos; を返す" time="0.000209667">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; source ブランチが存在しないとき欠損ブランチ名をログに含める" time="0.000141333">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; 両ブランチが存在しないとき両方の欠損ブランチ名をログに含める" time="0.000136292">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; 非 fatal な HTTP エラーのとき httpStatus をエラーログに含める" time="0.000164875">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; HTTP 401 エラーのとき FatalError をスローする" time="0.000366209">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; HTTP 500 エラーのとき FatalError をスローする" time="0.000065792">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; HTTP 401 エラーのとき FatalError.httpStatus が 401 になる" time="0.0001015">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; createMergeRequest が 403 エラーを投げたとき &apos;ERROR&apos; を返す" time="0.000048791">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; createMergeRequest が 500 エラーを投げたとき FatalError をスローする" time="0.000059417">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; hasDiff が fatal エラーのとき FatalError をスローする" time="0.000063458">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; openMergeRequestExists が fatal エラーのとき FatalError をスローする" time="0.000050167">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="createMrIfNeeded &gt; ネットワーク障害（ECONNREFUSED）のとき FatalError をスローする" time="0.000059041">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; リポジトリがないとき resolve する" time="0.000249041">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; 全件 CREATED のとき resolve する" time="0.0002045">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; 1 件でも ERROR があるとき resolve する" time="0.000104916">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; FatalError が発生したとき reject する" time="0.000284166">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; createClient に GITLAB_URL と ACCESS_TOKEN を渡す" time="0.000193792">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; 全件 CREATED のとき正しい件数を返す" time="0.000090125">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="process &gt; 一部 SKIPPED を含む場合 summary の件数が正しい" time="0.000066334">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="run &gt; run_start イベントをログ出力する" time="0.000183417">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="run &gt; run_end イベントに duration_ms を含めてログ出力する" time="0.000231375">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="run &gt; summary イベントをログ出力する" time="0.000273917">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="run &gt; ERROR がないとき &quot;SUCCESS&quot; を返す" time="0.00032375">
+        </testcase>
+        <testcase classname="test/main.test.ts" name="run &gt; ERROR が1件以上あるとき &quot;PARTIAL_FAILURE&quot; を返す" time="0.000242584">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/lib/config.test.ts" timestamp="2026-06-04T19:08:55.699Z" hostname="MacBook-Pro-2.local" tests="19" failures="0" errors="0" skipped="0" time="0.019045917">
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（パストラバーサル） &gt; .. を含む相対パスのとき例外をスローする" time="0.001614667">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（パストラバーサル） &gt; .. を含む絶対パスのとき例外をスローする" time="0.00030925">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（パストラバーサル） &gt; .. を含まない絶対パスは許可する" time="0.000524417">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; 正常な YAML を camelCase の Config 型にパースする" time="0.00572175">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; 複数リポジトリをすべてパースする" time="0.001112875">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; repositories が空配列のとき正常にパースする" time="0.000472292">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; YAML がオブジェクトでないとき例外をスローする" time="0.0006265">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; repositories キーがないとき例外をスローする" time="0.000414084">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; project_id が数値でないとき例外をスローする" time="0.000753708">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; branch_pairs のエントリに source がないとき例外をスローする" time="0.000539709">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; branch_pairs の source が空文字のとき例外をスローする" time="0.000597834">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; source と target が同じブランチ名のとき例外をスローする" time="0.000547333">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; branch_pairs のエントリに target がないとき例外をスローする" time="0.000426875">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ファイル） &gt; ファイルが存在しないとき例外をスローする" time="0.0006755">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ディレクトリ） &gt; ディレクトリ内の複数ファイルを結合して返す" time="0.001127833">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ディレクトリ） &gt; ファイルをアルファベット順に読み込む" time="0.000698458">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ディレクトリ） &gt; 空のディレクトリのとき空の repositories を返す" time="0.000291125">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ディレクトリ） &gt; .yaml / .yml 以外のファイルは無視する" time="0.001108083">
+        </testcase>
+        <testcase classname="test/lib/config.test.ts" name="loadConfig（ディレクトリ） &gt; ディレクトリ内のファイルに不正な YAML があるとき例外をスローする" time="0.000602709">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/lib/env.test.ts" timestamp="2026-06-04T19:08:55.700Z" hostname="MacBook-Pro-2.local" tests="21" failures="0" errors="0" skipped="0" time="0.006101333">
+        <testcase classname="test/lib/env.test.ts" name="loadEnv &gt; 設定済みの環境変数の値を返す" time="0.00179">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadEnv &gt; 未設定のとき例外をスローする" time="0.000633542">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadEnv &gt; 空文字のとき例外をスローする" time="0.000255542">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadEnv &gt; スペースのみのとき例外をスローする" time="0.000100875">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadOptionalEnv &gt; 設定済みの環境変数の値を返す" time="0.000070709">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadOptionalEnv &gt; 未設定のとき undefined を返す" time="0.000086791">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadOptionalEnv &gt; 空文字のとき undefined を返す" time="0.00005025">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="loadOptionalEnv &gt; スペースのみのとき undefined を返す" time="0.000039542">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="validateGitlabUrl &gt; https:// の URL を受け入れる" time="0.000276291">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="validateGitlabUrl &gt; http:// の URL を受け入れる" time="0.000066541">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="validateGitlabUrl &gt; 有効でない URL のとき例外をスローする" time="0.000104125">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="validateGitlabUrl &gt; file:// スキームのとき例外をスローする" time="0.000058916">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="validateGitlabUrl &gt; ftp:// スキームのとき例外をスローする" time="0.00005175">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; undefined のとき 5 を返す (デフォルト値)" time="0.000035167">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 正の整数文字列のとき数値に変換して返す" time="0.000035417">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 0 のとき例外をスローする" time="0.000045417">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 負の整数のとき例外をスローする" time="0.000042875">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 小数のとき例外をスローする" time="0.000135166">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 数値に変換できない文字列のとき例外をスローする" time="0.000057708">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 20 のとき正常に変換する" time="0.000027125">
+        </testcase>
+        <testcase classname="test/lib/env.test.ts" name="parseConcurrencyLimit &gt; 21 のとき例外をスローする" time="0.0000455">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/lib/gitlab.test.ts" timestamp="2026-06-04T19:08:55.701Z" hostname="MacBook-Pro-2.local" tests="13" failures="0" errors="0" skipped="0" time="0.006448167">
+        <testcase classname="test/lib/gitlab.test.ts" name="branchExists &gt; ブランチが存在するとき true を返す" time="0.001407875">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="branchExists &gt; 404 のとき false を返す" time="0.000666958">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="branchExists &gt; 404 以外のエラーは再スローする" time="0.000711833">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="branchExists &gt; 正しい引数で Branches.show を呼び出す" time="0.000654083">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="hasDiff &gt; コミットが存在するとき true を返す" time="0.000127541">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="hasDiff &gt; コミットが空配列のとき false を返す" time="0.000121208">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="hasDiff &gt; commits が undefined のとき false を返す" time="0.000107167">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="hasDiff &gt; from=target, to=source で比較する (source にあって target にないコミットを検出)" time="0.000122167">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="openMergeRequestExists &gt; オープン中の MR が存在するとき true を返す" time="0.00042175">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="openMergeRequestExists &gt; オープン中の MR がないとき false を返す" time="0.000112667">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="openMergeRequestExists &gt; 正しいパラメータで MergeRequests.all を呼び出す" time="0.000321917">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="createMergeRequest &gt; 正しいプロジェクト ID とブランチ名で MergeRequests.create を呼び出す" time="0.000421542">
+        </testcase>
+        <testcase classname="test/lib/gitlab.test.ts" name="createMergeRequest &gt; MR タイトルに source ブランチ名と target ブランチ名を含む" time="0.000145916">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/utils/http.test.ts" timestamp="2026-06-04T19:08:55.701Z" hostname="MacBook-Pro-2.local" tests="26" failures="0" errors="0" skipped="0" time="0.004612958">
+        <testcase classname="test/utils/http.test.ts" name="extractHttpStatus &gt; Error でない値は undefined を返す" time="0.000823667">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="extractHttpStatus &gt; cause を持たない Error は undefined を返す" time="0.000135125">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="extractHttpStatus &gt; cause に response がない場合は undefined を返す" time="0.000109375">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="extractHttpStatus &gt; cause.response に status がない場合は undefined を返す" time="0.000116583">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="extractHttpStatus &gt; cause.response.status から HTTP ステータスコードを返す" time="0.000242666">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isNotFoundError &gt; 404 エラーのとき true を返す" time="0.000079042">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isNotFoundError &gt; 404 以外の HTTP エラーのとき false を返す" time="0.000122583">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isNotFoundError &gt; Error でない値のとき false を返す" time="0.000102833">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; undefined のとき false を返す" time="0.00030225">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; 401 のとき true を返す" time="0.000074083">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; 403 のとき false を返す (プロジェクト固有のアクセス権限エラーの可能性があるため)" time="0.000094542">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; 5xx 系のとき true を返す" time="0.000050875">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; 200 のとき false を返す" time="0.000039875">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; 404 のとき false を返す" time="0.0000265">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalStatus &gt; 402 (fatal リストにない) のとき false を返す" time="0.000026291">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; HTTP 401 エラーのとき true を返す" time="0.000047208">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; HTTP 500 エラーのとき true を返す" time="0.000030042">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; HTTP 403 エラーのとき false を返す" time="0.000045">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; HTTP 404 エラーのとき false を返す" time="0.000029042">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; ECONNREFUSED のとき true を返す" time="0.0000495">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; ENOTFOUND のとき true を返す" time="0.00003175">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; ETIMEDOUT のとき true を返す" time="0.000040083">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; HTTP ステータスも code もない通常の Error のとき false を返す" time="0.000028917">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="isFatalError &gt; Error でない値のとき false を返す" time="0.000032917">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="toErrorMessage &gt; Error インスタンスのとき message を返す" time="0.000034917">
+        </testcase>
+        <testcase classname="test/utils/http.test.ts" name="toErrorMessage &gt; Error でない値のとき String() に変換して返す" time="0.000054417">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/utils/logger.test.ts" timestamp="2026-06-04T19:08:55.702Z" hostname="MacBook-Pro-2.local" tests="13" failures="0" errors="0" skipped="0" time="0.007177291">
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; info &gt; level: info を含む JSON を出力する" time="0.003600459">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; info &gt; 渡したフィールドを含む" time="0.000307458">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; info &gt; timestamp フィールドを含む" time="0.000364292">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; info &gt; console.log を使う" time="0.000218875">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; error &gt; level: error を含む JSON を出力する" time="0.000256541">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; error &gt; console.error を使う" time="0.000137459">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; token キーの値を [REDACTED] に置換する" time="0.000123417">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; access_token キーの値を [REDACTED] に置換する" time="0.00007675">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; authorization キーの値を [REDACTED] に置換する" time="0.000334542">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; password キーの値を [REDACTED] に置換する" time="0.000107791">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; secret キーの値を [REDACTED] に置換する" time="0.000116334">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; センシティブでないキーはそのまま出力する" time="0.000083291">
+        </testcase>
+        <testcase classname="test/utils/logger.test.ts" name="logger &gt; redact &gt; キーの大文字小文字を区別しない" time="0.000057417">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/utils/retry.test.ts" timestamp="2026-06-04T19:08:55.703Z" hostname="MacBook-Pro-2.local" tests="10" failures="0" errors="0" skipped="0" time="0.017950125">
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; 成功する操作はそのまま結果を返す" time="0.00154375">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; 429 で失敗後に成功する場合はリトライして結果を返す" time="0.001185417">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; 502 で失敗後に成功する場合はリトライして結果を返す" time="0.001256042">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; 503 で失敗後に成功する場合はリトライして結果を返す" time="0.001782834">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; 504 で失敗後に成功する場合はリトライして結果を返す" time="0.003334334">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; maxAttempts 回リトライしても失敗し続けた場合は最後のエラーをスローする" time="0.003714167">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; リトライ対象外のエラー（401）は即座にスローする" time="0.0004665">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; リトライ対象外のエラー（500）は即座にスローする" time="0.000511917">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; リトライ対象外の通常エラーは即座にスローする" time="0.000888">
+        </testcase>
+        <testcase classname="test/utils/retry.test.ts" name="withRetry &gt; maxAttempts のデフォルトは 3" time="0.001629209">
+        </testcase>
+    </testsuite>
+    <testsuite name="test/utils/timer.test.ts" timestamp="2026-06-04T19:08:55.703Z" hostname="MacBook-Pro-2.local" tests="2" failures="0" errors="0" skipped="0" time="0.001176917">
+        <testcase classname="test/utils/timer.test.ts" name="timed &gt; fn の戻り値を返す" time="0.00058175">
+        </testcase>
+        <testcase classname="test/utils/timer.test.ts" name="timed &gt; duration_ms に経過時間（ms）を返す" time="0.000133458">
+        </testcase>
+    </testsuite>
+</testsuites>

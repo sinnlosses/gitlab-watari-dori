@@ -9,15 +9,53 @@ spec:
       default: ""
       type: string
 ---
-variables:
-  DRY_RUN: $[[ inputs.dry_run ]]
-  PNPM_STORE_DIR: .pnpm-store
+# ──────────────────────────────────────────────────────────────────
+# 【必須】Settings > CI/CD > Variables に以下を登録してください:
+#   GITLAB_URL    — GitLab の URL（例: https://gitlab.example.com）
+#                   ※ Protected: ON 推奨（任意 URL 注入を防ぎます）
+#   ACCESS_TOKEN  — GitLab Personal Access Token
+#                   ※ Masked: ON / Protected: ON 推奨
+# ──────────────────────────────────────────────────────────────────
 
-# ACCESS_TOKEN は GitLab CI/CD Variables で Masked + Protected に設定すること。
-# 設定方法: Settings > CI/CD > Variables > ACCESS_TOKEN (Masked: ON, Protected: ON)
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
+      when: never
+    - if: "$CI_COMMIT_BRANCH"
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+stages:
+  - validate
+  - deploy
+
+variables:
+  GITLAB_URL:
+    value: ""
+    description: "【必須】GitLab インスタンスの URL（例: https://gitlab.example.com）"
+  DRY_RUN:
+    value: "$[[ inputs.dry_run ]]"
+    options:
+      - "false"
+      - "true"
+    description: "true にすると MR を作成せずログのみ出力します（デフォルト: false）"
+  SKIP_PROJECT_IDS:
+    value: "$[[ inputs.skip_project_ids ]]"
+    description: "MR 作成をスキップするプロジェクト ID（カンマ区切り、例: 123,456）省略可"
+  CONCURRENCY_LIMIT:
+    value: "5"
+    description: "同時 API リクエスト数（1〜20 の整数、デフォルト: 5）省略可"
+  CONFIG_PATH:
+    value: ""
+    description: "設定ファイルのパス（省略時はデフォルト: config.yaml）省略可"
+  PNPM_STORE_DIR:
+    value: .pnpm-store
+    description: "pnpm キャッシュの保存先（変更不要）"
 
 .node-setup:
   image: node:22.13-alpine
+  interruptible: true
   cache:
     key:
       files:
@@ -25,37 +63,57 @@ variables:
     paths:
       - $PNPM_STORE_DIR
   before_script:
-    - npm install -g corepack
     - corepack enable
-    - corepack prepare pnpm@11.5.1 --activate
+    - corepack install
     - pnpm config set store-dir $PNPM_STORE_DIR
     - pnpm install --frozen-lockfile
 
 audit:
   extends: .node-setup
+  stage: validate
   script:
     - pnpm audit --audit-level=high
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # critical 以上の脆弱性をブロックしたい場合は allow_failure: false に変更すること
   allow_failure: true
+  timeout: 10 minutes
 
 check:
   extends: .node-setup
+  stage: validate
   script:
     - pnpm check
     - pnpm build
+  artifacts:
+    when: always
+    reports:
+      junit: test-results.xml
+    paths:
+      - dist/
+    expire_in: 1 hour
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  timeout: 15 minutes
 
 create-merge-requests:
   extends: .node-setup
+  stage: deploy
+  interruptible: false
+  needs: [check]
   script:
-    - pnpm check
-    - pnpm build
     - pnpm start
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  timeout: 30 minutes
