@@ -12,7 +12,8 @@ pnpm start            # ビルド済み実行（node dist/main.js）
 pnpm lint             # oxlint でリント
 pnpm fmt              # oxfmt でフォーマット
 pnpm test             # vitest でテスト実行
-pnpm check            # 型チェック・リント・フォーマット・テスト 一括実行
+pnpm validate-config  # config/ ディレクトリの YAML スキーマ検証
+pnpm check            # 型チェック・リント・フォーマット・テスト・config 検証 一括実行
 ```
 
 ## コーディング規約

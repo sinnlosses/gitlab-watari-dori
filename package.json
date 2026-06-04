@@ -3,16 +3,17 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "dev": "tsx src/main.ts",
-    "lint": "oxlint src",
+    "lint": "oxlint src && pnpm lint:validate-config",
+    "lint:validate-config": "tsx lint/validate-config.ts",
     "lint:fix": "oxlint src --fix",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check": "tsc --noEmit && oxlint src && oxfmt . --check && vitest run"
+    "check": "tsc --noEmit && oxlint src && oxfmt . --check && vitest run && pnpm validate-config"
   },
   "dependencies": {
     "@gitbeaker/rest": "^41.0.0",

@@ -9,9 +9,9 @@
     "declaration": true,
     "declarationMap": true,
     "types": ["node"],
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "lint/**/*.ts"],
   "exclude": ["dist"]
 }
