@@ -117,7 +117,12 @@ export async function createMrIfNeeded(
   branchPair: BranchPair,
   dryRun = false,
 ): Promise<MrCreationResult> {
-  const logContext = { projectId, projectName, source: branchPair.source, target: branchPair.target }
+  const logContext = {
+    projectId,
+    projectName,
+    source: branchPair.source,
+    target: branchPair.target,
+  }
 
   try {
     const [sourceExists, targetExists] = await Promise.all([
