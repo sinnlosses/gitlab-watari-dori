@@ -10,12 +10,14 @@ tools: WebSearch, WebFetch, Read, Bash
 ## 調査対象
 
 ### Web 調査
+
 - 外部ライブラリの最新バージョン・Changelog・breaking changes
 - GitLab API の仕様・制限・エンドポイントの変更
 - npm パッケージの型定義・使用例・既知の問題
 - セキュリティアドバイザリ（CVE 等）
 
 ### リポジトリ調査
+
 - 既存コードの設計意図・パターン
 - git log / git blame による変更経緯の把握
 - 類似処理の実装例（コードベース内）
