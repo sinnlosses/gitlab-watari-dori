@@ -1,63 +1,63 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: 機能実装・バグ修正のとき、実装コードを書く前に使う
 ---
 
-# Test-Driven Development (TDD)
+# テスト駆動開発（TDD）
 
-## Overview
+## 概要
 
-Write the test first. Watch it fail. Write minimal code to pass.
+テストを先に書く。失敗するのを見る。通るための最小限のコードを書く。
 
-**Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
+**原則:** テストが失敗するのを見ていなければ、それが正しいものをテストしているか分からない。
 
-**Violating the letter of the rules is violating the spirit of the rules.**
+**このルールの文言を破ることは、精神を破ることと同じである。**
 
-## When to Use
+## 使いどころ
 
-**Always:**
+**常に使う:**
 
-- New features
-- Bug fixes
-- Refactoring
-- Behavior changes
+- 新機能
+- バグ修正
+- リファクタリング
+- 振る舞いの変更
 
-**Exceptions (ask your human partner):**
+**例外（ユーザーに確認する）:**
 
-- Throwaway prototypes
-- Generated code
-- Configuration files
+- 使い捨てプロトタイプ
+- 生成コード
+- 設定ファイル
 
-Thinking "skip TDD just this once"? Stop. That's rationalization.
+「今回だけ TDD をスキップしよう」と思ったら止まる。それは合理化だ。
 
-## The Iron Law
+## 鉄則
 
 ```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+失敗するテストなしに本番コードを書いてはならない
 ```
 
-Write code before the test? Delete it. Start over.
+テストより先にコードを書いた？ 削除する。やり直す。
 
-**No exceptions:**
+**例外なし:**
 
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
+- 「参照用に残す」はしない
+- テストを書きながら「適応」はしない
+- 見ない
+- 削除は削除を意味する
 
-Implement fresh from tests. Period.
+テストから新鮮に実装する。以上。
 
-## Red-Green-Refactor
+## RED-GREEN-REFACTOR
 
 ```dot
 digraph tdd_cycle {
     rankdir=LR;
-    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="Verify fails\ncorrectly", shape=diamond];
-    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
-    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
+    red [label="RED\n失敗テストを書く", shape=box, style=filled, fillcolor="#ffcccc"];
+    verify_red [label="正しく\n失敗するか確認", shape=diamond];
+    green [label="GREEN\n最小限のコード", shape=box, style=filled, fillcolor="#ccffcc"];
+    verify_green [label="通過確認\n全部グリーン", shape=diamond];
+    refactor [label="REFACTOR\n整理する", shape=box, style=filled, fillcolor="#ccccff"];
+    next [label="次へ", shape=ellipse];
 
     red -> verify_red;
     verify_red -> green [label="yes"];
@@ -65,15 +65,15 @@ digraph tdd_cycle {
     green -> verify_green;
     verify_green -> refactor [label="yes"];
     verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
+    refactor -> verify_green [label="グリーンを\n保つ"];
     verify_green -> next;
     next -> red;
 }
 ```
 
-### RED - Write Failing Test
+### RED — 失敗するテストを書く
 
-Write one minimal test showing what should happen.
+何が起きるべきかを示す最小限のテストを一つ書く。
 
 <Good>
 ```typescript
@@ -90,9 +90,8 @@ const result = await retryOperation(operation);
 expect(result).toBe('success');
 expect(attempts).toBe(3);
 });
-
 ````
-Clear name, tests real behavior, one thing
+明確な名前、実際の振る舞いをテスト、一つのことだけ
 </Good>
 
 <Bad>
@@ -106,37 +105,36 @@ test('retry works', async () => {
   expect(mock).toHaveBeenCalledTimes(3);
 });
 ````
-
-Vague name, tests mock not code
+名前が曖昧、コードではなくモックをテストしている
 </Bad>
 
-**Requirements:**
+**要件:**
 
-- One behavior
-- Clear name
-- Real code (no mocks unless unavoidable)
+- 一つの振る舞い
+- 明確な名前
+- 実際のコード（避けられない場合だけモック）
 
-### Verify RED - Watch It Fail
+### RED を確認する — 失敗するのを見る
 
-**MANDATORY. Never skip.**
+**必須。スキップ禁止。**
 
 ```bash
-npm test path/to/test.test.ts
+pnpm test path/to/test.test.ts
 ```
 
-Confirm:
+確認すること:
 
-- Test fails (not errors)
-- Failure message is expected
-- Fails because feature missing (not typos)
+- テストが失敗している（エラーではなく）
+- 失敗メッセージが期待通り
+- 機能が存在しないために失敗している（タイポではなく）
 
-**Test passes?** You're testing existing behavior. Fix test.
+**テストが通った？** 既存の振る舞いをテストしている。テストを修正する。
 
-**Test errors?** Fix error, re-run until it fails correctly.
+**テストがエラー？** エラーを修正し、正しく失敗するまで再実行する。
 
-### GREEN - Minimal Code
+### GREEN — 最小限のコード
 
-Write simplest code to pass the test.
+テストを通す最もシンプルなコードを書く。
 
 <Good>
 ```typescript
@@ -151,7 +149,7 @@ async function retryOperation<T>(fn: () => Promise<T>): Promise<T> {
   throw new Error('unreachable');
 }
 ```
-Just enough to pass
+通すのに十分な最小限
 </Good>
 
 <Bad>
@@ -167,142 +165,142 @@ async function retryOperation<T>(
   // YAGNI
 }
 ```
-Over-engineered
+過剰設計
 </Bad>
 
-Don't add features, refactor other code, or "improve" beyond the test.
+テストが要求していない機能追加・他コードのリファクタリング・「改善」はしない。
 
-### Verify GREEN - Watch It Pass
+### GREEN を確認する — 通るのを見る
 
-**MANDATORY.**
+**必須。**
 
 ```bash
-npm test path/to/test.test.ts
+pnpm test path/to/test.test.ts
 ```
 
-Confirm:
+確認すること:
 
-- Test passes
-- Other tests still pass
-- Output pristine (no errors, warnings)
+- テストが通っている
+- 他のテストがまだ通っている
+- 出力がクリーン（エラー・警告なし）
 
-**Test fails?** Fix code, not test.
+**テストが失敗した？** コードを修正する。テストは修正しない。
 
-**Other tests fail?** Fix now.
+**他のテストが失敗した？** 今すぐ直す。
 
-### REFACTOR - Clean Up
+### REFACTOR — 整理する
 
-After green only:
+グリーンになってから:
 
-- Remove duplication
-- Improve names
-- Extract helpers
+- 重複を除去する
+- 名前を改善する
+- ヘルパーを抽出する
 
-Keep tests green. Don't add behavior.
+テストをグリーンに保つ。振る舞いを追加しない。
 
-### Repeat
+### 繰り返す
 
-Next failing test for next feature.
+次の機能のために次の失敗テスト。
 
-## Good Tests
+## 良いテスト
 
-| Quality          | Good                                | Bad                                                 |
-| ---------------- | ----------------------------------- | --------------------------------------------------- |
-| **Minimal**      | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
-| **Clear**        | Name describes behavior             | `test('test1')`                                     |
-| **Shows intent** | Demonstrates desired API            | Obscures what code should do                        |
+| 品質 | 良い | 悪い |
+| --- | --- | --- |
+| **最小** | 一つのこと。名前に「and」がある？ 分割する。 | `test('validates email and domain and whitespace')` |
+| **明確** | 名前が振る舞いを説明している | `test('test1')` |
+| **意図を示す** | 望ましい API を実演している | コードが何をすべきか不明瞭 |
 
-## Why Order Matters
+## 順番が重要な理由
 
-**"I'll write tests after to verify it works"**
+**「動作確認のためにテストを後で書く」**
 
-Tests written after code pass immediately. Passing immediately proves nothing:
+コードの後に書いたテストはすぐに通る。すぐに通ることは何も証明しない:
 
-- Might test wrong thing
-- Might test implementation, not behavior
-- Might miss edge cases you forgot
-- You never saw it catch the bug
+- 間違ったものをテストしているかもしれない
+- 振る舞いではなく実装をテストしているかもしれない
+- 忘れたエッジケースを見逃しているかもしれない
+- バグを捕まえるのを見たことがない
 
-Test-first forces you to see the test fail, proving it actually tests something.
+テスト先書きは、テストが失敗するのを見ることを強制し、実際に何かをテストしていることを証明する。
 
-**"I already manually tested all the edge cases"**
+**「エッジケースはすでに手動でテストした」**
 
-Manual testing is ad-hoc. You think you tested everything but:
+手動テストはアドホックだ。すべてをテストしたと思っているが:
 
-- No record of what you tested
-- Can't re-run when code changes
-- Easy to forget cases under pressure
-- "It worked when I tried it" ≠ comprehensive
+- テストしたことの記録がない
+- コードが変わっても再実行できない
+- プレッシャー下でケースを忘れやすい
+- 「試したときは動いた」 ≠ 網羅的
 
-Automated tests are systematic. They run the same way every time.
+自動化テストは体系的だ。毎回同じ方法で実行される。
 
-**"Deleting X hours of work is wasteful"**
+**「X 時間の作業を削除するのは無駄」**
 
-Sunk cost fallacy. The time is already gone. Your choice now:
+サンクコストの誤謬だ。時間はすでに過ぎた。今の選択:
 
-- Delete and rewrite with TDD (X more hours, high confidence)
-- Keep it and add tests after (30 min, low confidence, likely bugs)
+- 削除して TDD で書き直す（X 時間追加、高信頼）
+- 残してテストを後で追加（30分、低信頼、バグの可能性高）
 
-The "waste" is keeping code you can't trust. Working code without real tests is technical debt.
+「無駄」は信頼できないコードを残すことだ。本物のテストのない動くコードは技術的負債である。
 
-**"TDD is dogmatic, being pragmatic means adapting"**
+**「TDD は教条的で、実用的とは適応を意味する」**
 
-TDD IS pragmatic:
+TDD こそ実用的だ:
 
-- Finds bugs before commit (faster than debugging after)
-- Prevents regressions (tests catch breaks immediately)
-- Documents behavior (tests show how to use code)
-- Enables refactoring (change freely, tests catch breaks)
+- コミット前にバグを見つける（デバッグより速い）
+- リグレッションを防ぐ（テストがすぐに壊れを捕まえる）
+- 振る舞いを文書化する（テストがコードの使い方を示す）
+- リファクタリングを可能にする（自由に変更、テストが壊れを捕まえる）
 
-"Pragmatic" shortcuts = debugging in production = slower.
+「実用的な」ショートカット = 本番でのデバッグ = 遅くなる。
 
-**"Tests after achieve the same goals - it's spirit not ritual"**
+**「テスト後書きでも同じ目標を達成できる — 精神であってリチュアルではない」**
 
-No. Tests-after answer "What does this do?" Tests-first answer "What should this do?"
+違う。テスト後書きは「これは何をするか？」に答える。テスト先書きは「これは何をすべきか？」に答える。
 
-Tests-after are biased by your implementation. You test what you built, not what's required. You verify remembered edge cases, not discovered ones.
+テスト後書きは実装によって偏っている。必要なものではなく、作ったものをテストする。思い出したエッジケースを確認し、発見したものではなく。
 
-Tests-first force edge case discovery before implementing. Tests-after verify you remembered everything (you didn't).
+テスト先書きは実装前にエッジケースの発見を強制する。テスト後書きはすべてを思い出したかを確認する（思い出せていない）。
 
-30 minutes of tests after ≠ TDD. You get coverage, lose proof tests work.
+30分のテスト後書き ≠ TDD。カバレッジは得られるが、テストが機能するという証明を失う。
 
-## Common Rationalizations
+## よくある合理化
 
-| Excuse                                 | Reality                                                                 |
-| -------------------------------------- | ----------------------------------------------------------------------- |
-| "Too simple to test"                   | Simple code breaks. Test takes 30 seconds.                              |
-| "I'll test after"                      | Tests passing immediately prove nothing.                                |
-| "Tests after achieve same goals"       | Tests-after = "what does this do?" Tests-first = "what should this do?" |
-| "Already manually tested"              | Ad-hoc ≠ systematic. No record, can't re-run.                           |
-| "Deleting X hours is wasteful"         | Sunk cost fallacy. Keeping unverified code is technical debt.           |
-| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete.             |
-| "Need to explore first"                | Fine. Throw away exploration, start with TDD.                           |
-| "Test hard = design unclear"           | Listen to test. Hard to test = hard to use.                             |
-| "TDD will slow me down"                | TDD faster than debugging. Pragmatic = test-first.                      |
-| "Manual test faster"                   | Manual doesn't prove edge cases. You'll re-test every change.           |
-| "Existing code has no tests"           | You're improving it. Add tests for existing code.                       |
+| 言い訳 | 現実 |
+| --- | --- |
+| 「単純すぎてテスト不要」 | シンプルなコードは壊れる。テストは30秒。 |
+| 「後でテストする」 | すぐに通るテストは何も証明しない。 |
+| 「テスト後書きでも同じ目標」 | 後書き = 「何をするか？」先書き = 「何をすべきか？」 |
+| 「手動でテスト済み」 | アドホック ≠ 体系的。記録なし、再実行不可。 |
+| 「X 時間の削除は無駄」 | サンクコストの誤謬。未検証コードを残すことが技術的負債。 |
+| 「参照用に残してテストを先に書く」 | 適応することになる。それはテスト後書き。削除は削除を意味する。 |
+| 「まず探索が必要」 | 構わない。探索を捨てて TDD で始める。 |
+| 「テストが難しい = 設計が不明確」 | テストに耳を傾ける。テストしにくい = 使いにくい。 |
+| 「TDD は遅くなる」 | TDD はデバッグより速い。実用的 = テスト先書き。 |
+| 「手動テストの方が速い」 | 手動はエッジケースを証明しない。変更のたびに再テストすることになる。 |
+| 「既存コードにテストがない」 | 改善しているところだ。既存コードにテストを追加する。 |
 
-## Red Flags - STOP and Start Over
+## 危険信号 — STOP してやり直す
 
-- Code before test
-- Test after implementation
-- Test passes immediately
-- Can't explain why test failed
-- Tests added "later"
-- Rationalizing "just this once"
-- "I already manually tested it"
-- "Tests after achieve the same purpose"
-- "It's about spirit not ritual"
-- "Keep as reference" or "adapt existing code"
-- "Already spent X hours, deleting is wasteful"
-- "TDD is dogmatic, I'm being pragmatic"
-- "This is different because..."
+- テストより先にコードを書いた
+- 実装の後にテストを追加した
+- テストがすぐに通った
+- なぜテストが失敗したか説明できない
+- テストを「後で」追加した
+- 「今回だけ」を合理化している
+- 「手動でテスト済み」
+- 「テスト後書きでも同じ目的を達成できる」
+- 「精神であってリチュアルではない」
+- 「参照用に残す」または「既存コードを適応する」
+- 「すでに X 時間かけた、削除は無駄」
+- 「TDD は教条的で、実用的なアプローチをとる」
+- 「これは違うケースなので...」
 
-**All of these mean: Delete code. Start over with TDD.**
+**これらはすべて: コードを削除する。TDD でやり直す。**
 
-## Example: Bug Fix
+## 例: バグ修正
 
-**Bug:** Empty email accepted
+**バグ:** 空のメールが受け入れられる
 
 **RED**
 
@@ -313,10 +311,10 @@ test("rejects empty email", async () => {
 })
 ```
 
-**Verify RED**
+**RED を確認する**
 
 ```bash
-$ npm test
+$ pnpm test
 FAIL: expected 'Email required', got undefined
 ```
 
@@ -331,59 +329,59 @@ function submitForm(data: FormData) {
 }
 ```
 
-**Verify GREEN**
+**GREEN を確認する**
 
 ```bash
-$ npm test
+$ pnpm test
 PASS
 ```
 
 **REFACTOR**
-Extract validation for multiple fields if needed.
+必要であれば複数フィールドのバリデーションを抽出する。
 
-## Verification Checklist
+## 完了前チェックリスト
 
-Before marking work complete:
+作業完了とマークする前に:
 
-- [ ] Every new function/method has a test
-- [ ] Watched each test fail before implementing
-- [ ] Each test failed for expected reason (feature missing, not typo)
-- [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
-- [ ] Output pristine (no errors, warnings)
-- [ ] Tests use real code (mocks only if unavoidable)
-- [ ] Edge cases and errors covered
+- [ ] すべての新しい関数・メソッドにテストがある
+- [ ] 実装前に各テストが失敗するのを見た
+- [ ] 各テストが期待通りの理由で失敗した（機能が存在しない、タイポではない）
+- [ ] 各テストを通すための最小限のコードを書いた
+- [ ] すべてのテストが通っている
+- [ ] 出力がクリーン（エラー・警告なし）
+- [ ] テストが実際のコードを使っている（避けられない場合だけモック）
+- [ ] エッジケースとエラーがカバーされている
 
-Can't check all boxes? You skipped TDD. Start over.
+すべてのボックスにチェックできない？ TDD をスキップした。やり直す。
 
-## When Stuck
+## 詰まったとき
 
-| Problem                | Solution                                                             |
-| ---------------------- | -------------------------------------------------------------------- |
-| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
-| Test too complicated   | Design too complicated. Simplify interface.                          |
-| Must mock everything   | Code too coupled. Use dependency injection.                          |
-| Test setup huge        | Extract helpers. Still complex? Simplify design.                     |
+| 問題 | 解決策 |
+| --- | --- |
+| テストの書き方が分からない | 望ましい API を書く。アサーションを先に書く。ユーザーに聞く。 |
+| テストが複雑すぎる | 設計が複雑すぎる。インターフェースをシンプルにする。 |
+| すべてをモックしなければならない | コードが密結合している。依存性の注入を使う。 |
+| テストのセットアップが巨大 | ヘルパーを抽出する。まだ複雑？ 設計をシンプルにする。 |
 
-## Debugging Integration
+## デバッグとの統合
 
-Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
+バグを見つけた？ それを再現する失敗テストを書く。TDD サイクルに従う。テストが修正を証明しリグレッションを防ぐ。
 
-Never fix bugs without a test.
+テストなしでバグを修正しない。
 
-## Testing Anti-Patterns
+## テストのアンチパターン
 
-When adding mocks or test utilities, read @testing-anti-patterns.md to avoid common pitfalls:
+モックを使う場合は以下の落とし穴に注意:
 
-- Testing mock behavior instead of real behavior
-- Adding test-only methods to production classes
-- Mocking without understanding dependencies
+- 実コードではなくモックの挙動を検証していないか
+- テスト専用メソッドをプロダクションクラスに追加していないか
+- 依存関係を理解せずにモックを使っていないか
 
-## Final Rule
+## 最終ルール
 
 ```
-Production code → test exists and failed first
-Otherwise → not TDD
+本番コード → テストが存在し、先に失敗した
+そうでなければ → TDD ではない
 ```
 
-No exceptions without your human partner's permission.
+ユーザーの許可なく例外なし。
