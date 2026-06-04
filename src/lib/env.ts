@@ -11,7 +11,6 @@ export function loadOptionalEnv(key: string): string | undefined {
   return value?.trim() ? value : undefined
 }
 
-/** as キャストはこの smart constructor 内だけ許容する。 */
 export function validateGitlabUrl(raw: string): GitLabUrl {
   let url: URL
   try {

@@ -17,25 +17,33 @@ import {
   openMergeRequestExists,
   createMergeRequest,
 } from "./lib/gitlab.js"
-import type { BranchName, BranchPair, ProjectId, ProjectName, Result } from "./types.js"
+import type {
+  BranchName,
+  BranchPair,
+  MrCreationResult,
+  ProjectId,
+  ProjectName,
+  RunResult,
+} from "./types.js"
 import { toProjectId } from "./types.js"
 import { FatalError } from "./utils/errors.js"
 import { extractHttpStatus, isFatalError, toErrorMessage } from "./utils/http.js"
 import { logger } from "./utils/logger.js"
 import { timed } from "./utils/timer.js"
 
-export async function main(): Promise<void> {
+export async function run(): Promise<RunResult> {
   logger.info({ event: "run_start", dryRun: DRY_RUN, concurrencyLimit: CONCURRENCY_LIMIT })
   const { value: resultCounts, duration_ms } = await timed(process)
   logger.info({ event: "summary", ...resultCounts })
   logger.info({ event: "run_end", duration_ms })
+  return resultCounts.ERROR === 0 ? "SUCCESS" : "PARTIAL_FAILURE"
 }
 
 /**
  * 設定ファイルを読み込み、全リポジトリ・ブランチペアに対してMR作成を並列実行する。
  * DRY_RUN=true のときはMRを作成せず、作成対象のログのみ出力する。
  */
-export async function process(): Promise<Record<Result, number>> {
+export async function process(): Promise<Record<MrCreationResult, number>> {
   const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
   const { repositories } = loadConfig(CONFIG_PATH)
 
@@ -56,7 +64,7 @@ export async function process(): Promise<Record<Result, number>> {
 
   const results = await Promise.all(mrCreationTasks)
 
-  const resultCounts = results.reduce<Record<Result, number>>(
+  const resultCounts = results.reduce<Record<MrCreationResult, number>>(
     (counts, result) => ({ ...counts, [result]: counts[result] + 1 }),
     { CREATED: 0, SKIPPED: 0, ERROR: 0 },
   )
@@ -101,7 +109,7 @@ export async function createMrIfNeeded(
   projectName: ProjectName,
   branchPair: BranchPair,
   dryRun = false,
-): Promise<Result> {
+): Promise<MrCreationResult> {
   const logContext = {
     projectId,
     projectName,
@@ -130,11 +138,13 @@ export async function createMrIfNeeded(
       })
       return "ERROR"
     }
+
     const diffExists = await hasDiff(gitlab, projectId, branchPair)
     if (!diffExists) {
       logger.info({ ...logContext, result: "SKIPPED", reason: "no_diff" })
       return "SKIPPED"
     }
+
     if (await openMergeRequestExists(gitlab, projectId, branchPair)) {
       logger.info({ ...logContext, result: "SKIPPED", reason: "mr_exists" })
       return "SKIPPED"

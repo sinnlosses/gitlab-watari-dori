@@ -34,4 +34,6 @@ export type Config = {
   readonly repositories: readonly RepoConfig[]
 }
 
-export type Result = "CREATED" | "SKIPPED" | "ERROR"
+export type MrCreationResult = "CREATED" | "SKIPPED" | "ERROR"
+
+export type RunResult = "SUCCESS" | "PARTIAL_FAILURE"

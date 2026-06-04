@@ -23,7 +23,7 @@ import {
   createClient,
 } from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
-import { parseSkipProjectIds, createMrIfNeeded, main, process as processFn } from "../src/main.js"
+import { parseSkipProjectIds, createMrIfNeeded, run, process as processFn } from "../src/main.js"
 import { toBranchName, toProjectId, toProjectName } from "../src/types.js"
 import { FatalError } from "../src/utils/errors.js"
 import { makeHttpError } from "./helpers.js"
@@ -322,7 +322,7 @@ describe("process", () => {
   })
 })
 
-describe("main", () => {
+describe("run", () => {
   beforeEach(() => {
     vi.mocked(createClient).mockReturnValue(mockGitlab)
     vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
@@ -338,7 +338,7 @@ describe("main", () => {
 
   it("run_start イベントをログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await main()
+    await run()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_start" }),
     )
@@ -346,7 +346,7 @@ describe("main", () => {
 
   it("run_end イベントに duration_ms を含めてログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await main()
+    await run()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "run_end", duration_ms: expect.any(Number) }),
     )
@@ -354,9 +354,27 @@ describe("main", () => {
 
   it("summary イベントをログ出力する", async () => {
     const { logger } = await import("../src/utils/logger.js")
-    await main()
+    await run()
     expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
       expect.objectContaining({ event: "summary", CREATED: 0, SKIPPED: 0, ERROR: 0 }),
     )
+  })
+
+  it('ERROR がないとき "SUCCESS" を返す', async () => {
+    await expect(run()).resolves.toBe("SUCCESS")
+  })
+
+  it('ERROR が1件以上あるとき "PARTIAL_FAILURE" を返す', async () => {
+    vi.mocked(loadConfig).mockReturnValue({
+      repositories: [
+        {
+          projectId: toProjectId(1),
+          projectName: toProjectName("repo"),
+          branchPairs: [branchPair],
+        },
+      ],
+    })
+    vi.mocked(branchExists).mockResolvedValue(false)
+    await expect(run()).resolves.toBe("PARTIAL_FAILURE")
   })
 })

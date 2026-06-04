@@ -11,19 +11,27 @@ describe("index", () => {
     vi.clearAllMocks()
   })
 
-  it("main が resolve したとき process.exit を呼ばない", async () => {
-    vi.doMock("../src/main.js", () => ({ main: vi.fn().mockResolvedValue(undefined) }))
+  it('run が "SUCCESS" を返したとき process.exit(0) を呼ぶ', async () => {
+    vi.doMock("../src/main.js", () => ({ run: vi.fn().mockResolvedValue("SUCCESS") }))
     vi.doMock("../src/utils/logger.js", () => ({ logger: { error: vi.fn() } }))
     await import("../src/index.js")
     await new Promise<void>((resolve) => setTimeout(resolve, 0))
-    expect(exitSpy).not.toHaveBeenCalled()
+    expect(exitSpy).toHaveBeenCalledWith(0)
+  })
+
+  it('run が "PARTIAL_FAILURE" を返したとき process.exit(1) を呼ぶ', async () => {
+    vi.doMock("../src/main.js", () => ({ run: vi.fn().mockResolvedValue("PARTIAL_FAILURE") }))
+    vi.doMock("../src/utils/logger.js", () => ({ logger: { error: vi.fn() } }))
+    await import("../src/index.js")
+    await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    expect(exitSpy).toHaveBeenCalledWith(1)
   })
 
   it("FatalError のとき httpStatus と message をログに出力して process.exit(1) を呼ぶ", async () => {
     const { FatalError } = await import("../src/utils/errors.js")
     const loggerError = vi.fn()
     vi.doMock("../src/main.js", () => ({
-      main: vi.fn().mockRejectedValue(new FatalError(401, new Error("Unauthorized"))),
+      run: vi.fn().mockRejectedValue(new FatalError(401, new Error("Unauthorized"))),
     }))
     vi.doMock("../src/utils/logger.js", () => ({ logger: { error: loggerError } }))
     await import("../src/index.js")
@@ -41,7 +49,7 @@ describe("index", () => {
   it("FatalError 以外のとき message を文字列化してログに出力して process.exit(1) を呼ぶ", async () => {
     const loggerError = vi.fn()
     vi.doMock("../src/main.js", () => ({
-      main: vi.fn().mockRejectedValue(new Error("unexpected")),
+      run: vi.fn().mockRejectedValue(new Error("unexpected")),
     }))
     vi.doMock("../src/utils/logger.js", () => ({ logger: { error: loggerError } }))
     await import("../src/index.js")
