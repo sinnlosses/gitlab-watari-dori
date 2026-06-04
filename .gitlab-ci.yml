@@ -57,6 +57,5 @@ create-merge-requests:
     - pnpm start
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      # SKIP_PROJECT_IDS はスケジュール設定の Variables で指定してください
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual

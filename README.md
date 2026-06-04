@@ -1,5 +1,9 @@
 # gitlab-watari-dori
 
+<p align="center">
+  <img src="assets/logo.svg" alt="渡り鳥" width="320"/>
+</p>
+
 GitLab の複数プロジェクトに対して、設定されたブランチペアの自動マージリクエストを作成するスクリプトです。
 GitLab CI のスケジュールパイプラインから定期実行することを想定しています。
 
