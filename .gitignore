@@ -21,5 +21,8 @@ dist/
 
 test-results.xml
 
+# vitest coverage output
+coverage/
+
 # config.test.ts が cwd() 内に作るテスト用一時ディレクトリ
 test-tmp-*/

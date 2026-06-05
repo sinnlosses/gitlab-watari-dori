@@ -28,6 +28,16 @@ describe("extractHttpStatus", () => {
     expect(extractHttpStatus(new Error("oops", { cause: { response: {} } }))).toBeUndefined()
   })
 
+  it("cause.response が null のとき undefined を返す", () => {
+    expect(extractHttpStatus(new Error("oops", { cause: { response: null } }))).toBeUndefined()
+  })
+
+  it("cause.response.status が数値でないとき undefined を返す", () => {
+    expect(
+      extractHttpStatus(new Error("oops", { cause: { response: { status: "200" } } })),
+    ).toBeUndefined()
+  })
+
   it("cause.response.status から HTTP ステータスコードを返す", () => {
     expect(extractHttpStatus(makeHttpError(404))).toBe(404)
     expect(extractHttpStatus(makeHttpError(401))).toBe(401)

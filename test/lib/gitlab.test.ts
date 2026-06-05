@@ -1,13 +1,15 @@
+import { Gitlab } from "@gitbeaker/rest"
 import { describe, expect, it, vi } from "vitest"
 
 import type { GitlabClient } from "../../src/lib/gitlab.js"
 import {
   branchExists,
+  createClient,
   createMergeRequest,
   hasDiff,
   openMergeRequestExists,
 } from "../../src/lib/gitlab.js"
-import { toBranchName, toProjectId } from "../../src/types.js"
+import { toBranchName, toGitLabUrl, toProjectId } from "../../src/types.js"
 import { makeHttpError } from "../helpers.js"
 
 function makeClient(
@@ -23,6 +25,13 @@ function makeClient(
     MergeRequests: { all: vi.fn(), create: vi.fn(), ...overrides.MergeRequests },
   } as unknown as GitlabClient
 }
+
+describe("createClient", () => {
+  it("Gitlab インスタンスを返す", () => {
+    const client = createClient(toGitLabUrl("https://gitlab.example.com"), "test-token")
+    expect(client).toBeInstanceOf(Gitlab)
+  })
+})
 
 describe("branchExists", () => {
   it("ブランチが存在するとき true を返す", async () => {
