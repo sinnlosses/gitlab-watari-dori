@@ -128,6 +128,7 @@ export async function createMrIfNeeded(
   dryRun = false,
 ): Promise<MrCreationResult> {
   const logContext = {
+    event: "create_mr",
     projectId,
     projectName,
     source: branchPair.source,
