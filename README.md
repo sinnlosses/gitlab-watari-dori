@@ -51,7 +51,7 @@ pnpm install
 
 # 2. 設定ファイルを作成
 cp config/team-a.yaml config/my-team.yaml
-# → project_id と branch_pairs を自分の環境に合わせて編集
+# → projectId と branchPairs を自分の環境に合わせて編集
 
 # 3. 動作確認（API 呼び出しなし・安全）
 GITLAB_URL=https://gitlab.example.com \
@@ -122,10 +122,10 @@ config/
 # config/my-team.yaml
 
 repositories:
-  # project_id: GitLab の Settings > General または URL から確認できる数値 ID
-  - project_id: 123
-    project_name: my-service-a # ログ表示用の任意の識別名
-    branch_pairs:
+  # projectId: GitLab の Settings > General または URL から確認できる数値 ID
+  - projectId: 123
+    projectName: my-service-a # ログ表示用の任意の識別名
+    branchPairs:
       # develop → staging への定期 MR を自動作成
       - source: develop
         target: staging
@@ -133,9 +133,9 @@ repositories:
       - source: staging
         target: production
 
-  - project_id: 456
-    project_name: my-service-b
-    branch_pairs:
+  - projectId: 456
+    projectName: my-service-b
+    branchPairs:
       - source: develop
         target: main
 ```

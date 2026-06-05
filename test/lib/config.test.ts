@@ -50,9 +50,9 @@ describe("loadConfig（ファイル）", () => {
       loadConfig(
         writeConfigFile(`
 repositories:
-  - project_id: 1
-    project_name: my-repo
-    branch_pairs:
+  - projectId: 1
+    projectName: my-repo
+    branchPairs:
       - source: develop
         target: main
       - source: develop
@@ -77,14 +77,14 @@ repositories:
     const { repositories } = loadConfig(
       writeConfigFile(`
 repositories:
-  - project_id: 1
-    project_name: repo-a
-    branch_pairs:
+  - projectId: 1
+    projectName: repo-a
+    branchPairs:
       - source: dev
         target: main
-  - project_id: 2
-    project_name: repo-b
-    branch_pairs:
+  - projectId: 2
+    projectName: repo-b
+    branchPairs:
       - source: dev
         target: main
 `),
@@ -106,41 +106,41 @@ repositories:
     expect(() => loadConfig(writeConfigFile("other_key: []"))).toThrow("形式が不正です")
   })
 
-  it("project_id が数値でないとき例外をスローする", () => {
+  it("projectId が数値でないとき例外をスローする", () => {
     expect(() =>
       loadConfig(
         writeConfigFile(`
 repositories:
-  - project_id: "not-a-number"
-    project_name: repo
-    branch_pairs: []
+  - projectId: "not-a-number"
+    projectName: repo
+    branchPairs: []
 `),
       ),
     ).toThrow("形式が不正です")
   })
 
-  it("branch_pairs のエントリに source がないとき例外をスローする", () => {
+  it("branchPairs のエントリに source がないとき例外をスローする", () => {
     expect(() =>
       loadConfig(
         writeConfigFile(`
 repositories:
-  - project_id: 1
-    project_name: repo
-    branch_pairs:
+  - projectId: 1
+    projectName: repo
+    branchPairs:
       - target: main
 `),
       ),
     ).toThrow("形式が不正です")
   })
 
-  it("branch_pairs の source が空文字のとき例外をスローする", () => {
+  it("branchPairs の source が空文字のとき例外をスローする", () => {
     expect(() =>
       loadConfig(
         writeConfigFile(`
 repositories:
-  - project_id: 1
-    project_name: repo
-    branch_pairs:
+  - projectId: 1
+    projectName: repo
+    branchPairs:
       - source: ""
         target: main
 `),
@@ -153,9 +153,9 @@ repositories:
       loadConfig(
         writeConfigFile(`
 repositories:
-  - project_id: 1
-    project_name: repo
-    branch_pairs:
+  - projectId: 1
+    projectName: repo
+    branchPairs:
       - source: main
         target: main
 `),
@@ -163,14 +163,14 @@ repositories:
     ).toThrow("形式が不正です")
   })
 
-  it("branch_pairs のエントリに target がないとき例外をスローする", () => {
+  it("branchPairs のエントリに target がないとき例外をスローする", () => {
     expect(() =>
       loadConfig(
         writeConfigFile(`
 repositories:
-  - project_id: 1
-    project_name: repo
-    branch_pairs:
+  - projectId: 1
+    projectName: repo
+    branchPairs:
       - source: develop
 `),
       ),
@@ -188,17 +188,17 @@ describe("loadConfig（ディレクトリ）", () => {
     const dirPath = writeConfigDir({
       "team-a.yaml": `
 repositories:
-  - project_id: 1
-    project_name: service-a
-    branch_pairs:
+  - projectId: 1
+    projectName: service-a
+    branchPairs:
       - source: develop
         target: main
 `,
       "team-b.yaml": `
 repositories:
-  - project_id: 2
-    project_name: service-b
-    branch_pairs:
+  - projectId: 2
+    projectName: service-b
+    branchPairs:
       - source: develop
         target: main
 `,
@@ -213,15 +213,15 @@ repositories:
     const dirPath = writeConfigDir({
       "team-b.yaml": `
 repositories:
-  - project_id: 2
-    project_name: service-b
-    branch_pairs: []
+  - projectId: 2
+    projectName: service-b
+    branchPairs: []
 `,
       "team-a.yaml": `
 repositories:
-  - project_id: 1
-    project_name: service-a
-    branch_pairs: []
+  - projectId: 1
+    projectName: service-a
+    branchPairs: []
 `,
     })
     const { repositories } = loadConfig(dirPath)
@@ -238,9 +238,9 @@ repositories:
     const dirPath = writeConfigDir({
       "team-a.yaml": `
 repositories:
-  - project_id: 1
-    project_name: service-a
-    branch_pairs: []
+  - projectId: 1
+    projectName: service-a
+    branchPairs: []
 `,
       "README.md": "# readme",
       ".gitkeep": "",

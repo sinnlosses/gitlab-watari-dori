@@ -16,18 +16,11 @@ const BranchPairSchema = z
     message: "source と target に同じブランチは指定できません",
   })
 
-// YAML は慣習的に snake_case のため、transform で camelCase へ変換する。
-const RepositorySchema = z
-  .object({
-    project_id: z.number().int().transform(toProjectId),
-    project_name: z.string().transform(toProjectName),
-    branch_pairs: z.array(BranchPairSchema),
-  })
-  .transform((raw) => ({
-    projectId: raw.project_id,
-    projectName: raw.project_name,
-    branchPairs: raw.branch_pairs,
-  }))
+const RepositorySchema = z.object({
+  projectId: z.number().int().transform(toProjectId),
+  projectName: z.string().transform(toProjectName),
+  branchPairs: z.array(BranchPairSchema),
+})
 
 const ConfigSchema = z.object({
   repositories: z.array(RepositorySchema),

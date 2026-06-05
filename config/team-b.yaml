@@ -1,7 +1,7 @@
 repositories:
-  - project_id: 82861978
-    project_name: sample-qa-sprint
-    branch_pairs:
+  - projectId: 82861978
+    projectName: sample-qa-sprint
+    branchPairs:
       - source: qa/2601
         target: qa/2601-f
       - source: qa/2601-f
