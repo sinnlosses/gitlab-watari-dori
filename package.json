@@ -4,7 +4,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/src/index.js",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx --env-file=.env src/index.ts",
     "lint": "oxlint src && pnpm lint:validate-config",
     "lint:fix": "oxlint src --fix",
     "lint:validate-config": "tsx scripts/lint/validate-config.ts",
