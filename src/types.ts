@@ -23,6 +23,9 @@ export type BranchPair = {
 
 declare const gitLabUrlBrand: unique symbol
 export type GitLabUrl = string & { readonly [gitLabUrlBrand]: never }
+export function toGitLabUrl(s: string): GitLabUrl {
+  return s as GitLabUrl
+}
 
 export type RepoConfig = {
   readonly projectId: ProjectId

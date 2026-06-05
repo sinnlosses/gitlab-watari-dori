@@ -1,12 +1,19 @@
 // @gitbeaker/rest がスローするエラー構造 (Error → cause.response.status) に依存している。
 // ライブラリのメジャーバージョンアップ時はこの構造が変わる可能性がある。
+
+function hasKey<K extends string>(obj: object, key: K): obj is Record<K, unknown> {
+  return key in obj
+}
+
 export function extractHttpStatus(error: unknown): number | undefined {
   if (!(error instanceof Error)) return undefined
   const { cause } = error
   if (typeof cause !== "object" || cause === null) return undefined
-  const response = (cause as { response?: unknown }).response
+  if (!hasKey(cause, "response")) return undefined
+  const { response } = cause
   if (typeof response !== "object" || response === null) return undefined
-  const status = (response as { status?: unknown }).status
+  if (!hasKey(response, "status")) return undefined
+  const { status } = response
   return typeof status === "number" ? status : undefined
 }
 
@@ -27,7 +34,8 @@ export function isFatalError(error: unknown): boolean {
   const status = extractHttpStatus(error)
   if (status !== undefined) return isFatalStatus(status)
   if (!(error instanceof Error)) return false
-  const code = (error as NodeJS.ErrnoException).code
+  if (!hasKey(error, "code")) return false
+  const { code } = error
   return code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT"
 }
 

@@ -1,4 +1,4 @@
-import type { GitLabUrl } from "../types.js"
+import { type GitLabUrl, toGitLabUrl } from "../types.js"
 
 export function loadEnv(key: string): string {
   const value = process.env[key]
@@ -21,7 +21,7 @@ export function validateGitlabUrl(raw: string): GitLabUrl {
   if (url.protocol !== "https:" && url.protocol !== "http:") {
     throw new Error(`GITLAB_URL は http:// または https:// で始まる必要があります: "${raw}"`)
   }
-  return raw as GitLabUrl
+  return toGitLabUrl(raw)
 }
 
 export function parseConcurrencyLimit(raw: string | undefined): number {

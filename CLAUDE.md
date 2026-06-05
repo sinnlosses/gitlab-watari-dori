@@ -8,6 +8,7 @@
 - HTTP エラーハンドリングは `src/utils/http.ts` の既存ユーティリティを使うこと
 - 環境変数はすべて `src/lib/env.ts` で管理する
 - **`as` キャストは極力使わない**。ブランド型の生成は `toProjectId` のような factory 関数に封じ込め、それ以外の箇所で `as` を使わないこと
+- `src/main.ts` では `type` を定義せず `src/types.ts`に定義すること
 
 ## テスト方針
 
