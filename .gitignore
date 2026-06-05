@@ -20,3 +20,6 @@ dist/
 .idea/
 
 test-results.xml
+
+# config.test.ts が cwd() 内に作るテスト用一時ディレクトリ
+test-tmp-*/

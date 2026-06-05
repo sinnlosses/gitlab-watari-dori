@@ -343,6 +343,22 @@ describe("process", () => {
     await expect(processFn()).rejects.toThrow()
   })
 
+  it("FatalError 発生後にキューをクリアして残タスクを実行しない", async () => {
+    vi.mocked(loadConfig).mockReturnValue({
+      repositories: Array.from({ length: 10 }, (_, i) => ({
+        projectId: toProjectId(i + 1),
+        projectName: toProjectName(`repo-${i + 1}`),
+        branchPairs: [branchPair],
+      })),
+    })
+    vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
+    await expect(processFn()).rejects.toThrow(FatalError)
+    // branchExists は各タスクで source/target の 2 回呼ばれる。
+    // clearQueue により残り 5 タスクは実行されないため、最大 CONCURRENCY_LIMIT × 2 = 10 回に留まる。
+    // clearQueue なしの場合は全 10 タスクが実行され 20 回呼ばれる。
+    expect(vi.mocked(branchExists).mock.calls.length).toBeLessThanOrEqual(10)
+  })
+
   it("createClient に GITLAB_URL と ACCESS_TOKEN を渡す", async () => {
     await processFn()
     expect(createClient).toHaveBeenCalledWith("https://gitlab.test", "test-token")

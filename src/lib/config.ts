@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from "node:fs"
-import { join } from "node:path"
+import { join, resolve, sep } from "node:path"
 
 import { load as parseYaml } from "js-yaml"
 import { z } from "zod"
@@ -34,7 +34,9 @@ const ConfigSchema = z.object({
 })
 
 function assertSafePath(inputPath: string): void {
-  if (inputPath.split(/[/\\]/).includes("..")) {
+  const cwd = process.cwd()
+  const resolved = resolve(cwd, inputPath)
+  if (resolved !== cwd && !resolved.startsWith(cwd + sep)) {
     throw new Error(`CONFIG_PATH にパストラバーサルは使用できません: "${inputPath}"`)
   }
 }

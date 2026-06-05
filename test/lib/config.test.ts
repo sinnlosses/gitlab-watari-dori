@@ -1,5 +1,4 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
@@ -9,7 +8,7 @@ import { loadConfig } from "../../src/lib/config.js"
 let tmpDir: string
 
 beforeEach(() => {
-  tmpDir = mkdtempSync(join(tmpdir(), "watari-dori-test-"))
+  tmpDir = mkdtempSync(join(process.cwd(), "test-tmp-"))
 })
 
 afterEach(() => {
@@ -40,9 +39,8 @@ describe("loadConfig（パストラバーサル）", () => {
     expect(() => loadConfig("/tmp/../etc/passwd")).toThrow("CONFIG_PATH")
   })
 
-  it(".. を含まない絶対パスは許可する", () => {
-    expect(() => loadConfig("/nonexistent/path/repos.yaml")).toThrow()
-    expect(() => loadConfig("/nonexistent/path/repos.yaml")).not.toThrow("CONFIG_PATH")
+  it("cwd() 外の絶対パスのとき例外をスローする", () => {
+    expect(() => loadConfig("/etc/passwd")).toThrow("CONFIG_PATH")
   })
 })
 
@@ -180,7 +178,8 @@ repositories:
   })
 
   it("ファイルが存在しないとき例外をスローする", () => {
-    expect(() => loadConfig("/nonexistent/path/repos.yaml")).toThrow()
+    expect(() => loadConfig(join(tmpDir, "nonexistent.yaml"))).toThrow()
+    expect(() => loadConfig(join(tmpDir, "nonexistent.yaml"))).not.toThrow("CONFIG_PATH")
   })
 })
 

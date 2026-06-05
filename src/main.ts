@@ -65,7 +65,17 @@ export async function process(): Promise<Record<MrCreationResult, number>> {
   const limit = pLimit(CONCURRENCY_LIMIT)
   const mrCreationTasks = targetRepositories.flatMap(({ projectId, projectName, branchPairs }) =>
     branchPairs.map((branchPair) =>
-      limit(() => createMrIfNeeded(gitlabClient, projectId, projectName, branchPair, DRY_RUN)),
+      limit(async () => {
+        try {
+          return await createMrIfNeeded(gitlabClient, projectId, projectName, branchPair, DRY_RUN)
+        } catch (err) {
+          // FatalError を検出した瞬間にキューをクリアし、後続タスクが開始されるのを防ぐ。
+          // p-limit は各タスク完了後に next() を呼んで次のタスクを起動するため、
+          // Promise.all の catch 側では next() の前に割り込めない。
+          if (err instanceof FatalError) limit.clearQueue()
+          throw err
+        }
+      }),
     ),
   )
 
