@@ -41,7 +41,12 @@ vi.mock("../src/utils/logger.js", () => ({
 }))
 
 import { createMrIfNeeded } from "../src/index.js"
-import { branchExists, hasDiff, openMergeRequestExists, createMergeRequest } from "../src/lib/gitlab.js"
+import {
+  branchExists,
+  hasDiff,
+  openMergeRequestExists,
+  createMergeRequest,
+} from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
 import { makeHttpError } from "./helpers.js"
 
@@ -66,11 +71,11 @@ Result 型の値: `"CREATED"` / `"SKIPPED"` / `"ERROR"`（すべて大文字）
 
 **3つの実装戦略**
 
-| 戦略 | 使いどころ |
-| ---- | ---------- |
-| 仮実装（定数返し） | まず最速で GREEN にする |
-| 三角測量 | 仮実装が汎化されるべきか確信が持てないとき、別テストを追加して強制する |
-| 明白な実装 | 実装が自明な場合。ただし仮実装から始める方が安全 |
+| 戦略               | 使いどころ                                                             |
+| ------------------ | ---------------------------------------------------------------------- |
+| 仮実装（定数返し） | まず最速で GREEN にする                                                |
+| 三角測量           | 仮実装が汎化されるべきか確信が持てないとき、別テストを追加して強制する |
+| 明白な実装         | 実装が自明な場合。ただし仮実装から始める方が安全                       |
 
 **鉄則**: 今ある失敗テストを通すための最小限のコードだけ書く。将来必要になりそうな機能は書かない。
 
@@ -112,13 +117,13 @@ GREEN を保ちながら実施する。
 
 **よくあるバグパターン**
 
-| 症状 | 確認すること |
-| ---- | ------------ |
-| モックが効かない | `vi.mock` が import より前に宣言されているか |
-| `FatalError` がスローされない | `isFatalStatus(401/5xx)` の判定ロジック |
-| HTTP エラーが拾えない | `makeHttpError` の `cause.response.status` 構造 |
-| 環境変数が undefined | `loadEnv` vs `loadOptionalEnv` の使い分け |
-| `pnpm check` が落ちる | `oxlint`/`oxfmt` 違反か型エラー |
+| 症状                          | 確認すること                                    |
+| ----------------------------- | ----------------------------------------------- |
+| モックが効かない              | `vi.mock` が import より前に宣言されているか    |
+| `FatalError` がスローされない | `isFatalStatus(401/5xx)` の判定ロジック         |
+| HTTP エラーが拾えない         | `makeHttpError` の `cause.response.status` 構造 |
+| 環境変数が undefined          | `loadEnv` vs `loadOptionalEnv` の使い分け       |
+| `pnpm check` が落ちる         | `oxlint`/`oxfmt` 違反か型エラー                 |
 
 3回試みても解決しない場合はアーキテクチャの問題。ユーザーに相談する。
 

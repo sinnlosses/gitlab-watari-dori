@@ -1,5 +1,5 @@
 ---
-name: test-driven-development
+name: tdd
 description: 機能実装・バグ修正のとき、実装コードを書く前に使う
 ---
 

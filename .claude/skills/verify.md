@@ -1,5 +1,5 @@
 ---
-name: verification-before-completion
+name: verify
 description: 作業完了・修正済み・テスト通過を宣言する前、コミット・PR 作成の前に使う — 検証コマンドを実行して出力を確認してから完了を主張すること。常に証拠を先に。
 ---
 
