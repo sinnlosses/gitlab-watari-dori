@@ -37,6 +37,7 @@ workflow:
 stages:
   - validate
   - deploy
+  - renovate
 
 variables:
   GITLAB_URL:
@@ -57,6 +58,9 @@ variables:
   PNPM_STORE_DIR:
     value: .pnpm-store
     description: "pnpm キャッシュの保存先（変更不要）"
+  RENOVATE_TOKEN:
+    value: ""
+    description: "【Renovate 用】GitLab PAT（api スコープ必須）。Settings > CI/CD > Variables に Masked で登録してください"
 
 .node-setup:
   image: node:22.13-alpine
@@ -114,7 +118,7 @@ create-merge-requests:
   script:
     - pnpm start
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $RENOVATE != "true"'
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual
   retry:
@@ -123,3 +127,24 @@ create-merge-requests:
       - runner_system_failure
       - stuck_or_timeout_failure
   timeout: 30 minutes
+
+# ──────────────────────────────────────────────────────────────────
+# Renovate — 依存自動更新
+# 【必須】Settings > CI/CD > Variables に登録:
+#   RENOVATE_TOKEN — GitLab PAT（api スコープ）。Masked: ON 推奨
+# 【必須】Settings > CI/CD > Schedules にスケジュールを作成:
+#   変数 RENOVATE=true を追加すること（他のスケジュールと区別するため）
+# ──────────────────────────────────────────────────────────────────
+renovate:
+  stage: renovate
+  image: renovate/renovate:latest
+  variables:
+    RENOVATE_PLATFORM: gitlab
+    RENOVATE_ENDPOINT: $CI_SERVER_URL/api/v4
+    RENOVATE_TOKEN: $RENOVATE_TOKEN
+    LOG_LEVEL: info
+  script:
+    - renovate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $RENOVATE == "true"'
+  timeout: 10 minutes
