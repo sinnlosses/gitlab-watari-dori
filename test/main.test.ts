@@ -26,7 +26,7 @@ import type { GitlabClient } from "../src/lib/gitlab.js"
 import { parseSkipProjectIds, createMrIfNeeded, run, process as processFn } from "../src/main.js"
 import { toBranchName, toProjectId, toProjectName } from "../src/types.js"
 import { FatalError } from "../src/utils/errors.js"
-import { makeHttpError } from "./helpers.js"
+import { makeConfig, makeHttpError } from "./helpers.js"
 
 const mockGitlab = {} as unknown as GitlabClient
 const branchPair = { source: toBranchName("develop"), target: toBranchName("main") }
@@ -287,7 +287,7 @@ describe("createMrIfNeeded", () => {
 describe("process", () => {
   beforeEach(() => {
     vi.mocked(createClient).mockReturnValue(mockGitlab)
-    vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
+    vi.mocked(loadConfig).mockReturnValue(makeConfig([]))
     vi.mocked(branchExists).mockResolvedValue(true)
     vi.mocked(hasDiff).mockResolvedValue(true)
     vi.mocked(openMergeRequestExists).mockResolvedValue(false)
@@ -303,54 +303,56 @@ describe("process", () => {
   })
 
   it("全件 CREATED のとき resolve する", async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     await expect(processFn()).resolves.toEqual({ CREATED: 1, SKIPPED: 0, ERROR: 0 })
   })
 
   it("1 件でも ERROR があるとき resolve する", async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     vi.mocked(branchExists).mockResolvedValue(false)
     await expect(processFn()).resolves.toEqual({ CREATED: 0, SKIPPED: 0, ERROR: 1 })
   })
 
   it("FatalError が発生したとき reject する", async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
     await expect(processFn()).rejects.toThrow()
   })
 
   it("FatalError 発生後にキューをクリアして残タスクを実行しない", async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: Array.from({ length: 10 }, (_, i) => ({
-        projectId: toProjectId(i + 1),
-        projectName: toProjectName(`repo-${i + 1}`),
-        branchPairs: [branchPair],
-      })),
-    })
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig(
+        Array.from({ length: 10 }, (_, i) => ({
+          projectId: toProjectId(i + 1),
+          projectName: toProjectName(`repo-${i + 1}`),
+          branchPairs: [branchPair],
+        })),
+      ),
+    )
     vi.mocked(branchExists).mockRejectedValue(makeHttpError(401))
     await expect(processFn()).rejects.toThrow(FatalError)
     // branchExists は各タスクで source/target の 2 回呼ばれる。
@@ -365,8 +367,8 @@ describe("process", () => {
   })
 
   it("全件 CREATED のとき正しい件数を返す", async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo-a"),
@@ -377,21 +379,21 @@ describe("process", () => {
           projectName: toProjectName("repo-b"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     await expect(processFn()).resolves.toEqual({ CREATED: 2, SKIPPED: 0, ERROR: 0 })
   })
 
   it("一部 SKIPPED を含む場合 summary の件数が正しい", async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo-a"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     vi.mocked(hasDiff).mockResolvedValue(false)
     await expect(processFn()).resolves.toEqual({ CREATED: 0, SKIPPED: 1, ERROR: 0 })
   })
@@ -400,7 +402,7 @@ describe("process", () => {
 describe("run", () => {
   beforeEach(() => {
     vi.mocked(createClient).mockReturnValue(mockGitlab)
-    vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
+    vi.mocked(loadConfig).mockReturnValue(makeConfig([]))
     vi.mocked(branchExists).mockResolvedValue(true)
     vi.mocked(hasDiff).mockResolvedValue(true)
     vi.mocked(openMergeRequestExists).mockResolvedValue(false)
@@ -440,15 +442,15 @@ describe("run", () => {
   })
 
   it('ERROR が1件以上あるとき "PARTIAL_FAILURE" を返す', async () => {
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     vi.mocked(branchExists).mockResolvedValue(false)
     await expect(run()).resolves.toBe("PARTIAL_FAILURE")
   })

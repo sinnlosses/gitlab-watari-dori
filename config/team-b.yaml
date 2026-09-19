@@ -1,3 +1,5 @@
+accessTokenEnv: ACCESS_TOKEN_TEAM_B
+
 repositories:
   - projectId: 82861978
     projectName: sample-qa-sprint

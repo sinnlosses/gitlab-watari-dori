@@ -49,6 +49,7 @@ describe("loadConfig（ファイル）", () => {
     expect(
       loadConfig(
         writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: my-repo
@@ -59,23 +60,27 @@ repositories:
         target: staging
 `),
       ),
-    ).toEqual({
-      repositories: [
-        {
-          projectId: 1,
-          projectName: "my-repo",
-          branchPairs: [
-            { source: "develop", target: "main" },
-            { source: "develop", target: "staging" },
-          ],
-        },
-      ],
-    })
+    ).toEqual([
+      {
+        accessTokenEnv: "ACCESS_TOKEN_TEAM_A",
+        repositories: [
+          {
+            projectId: 1,
+            projectName: "my-repo",
+            branchPairs: [
+              { source: "develop", target: "main" },
+              { source: "develop", target: "staging" },
+            ],
+          },
+        ],
+      },
+    ])
   })
 
   it("複数リポジトリをすべてパースする", () => {
-    const { repositories } = loadConfig(
+    const [group] = loadConfig(
       writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: repo-a
@@ -89,13 +94,20 @@ repositories:
         target: main
 `),
     )
-    expect(repositories).toHaveLength(2)
-    expect(repositories[0]?.projectId).toBe(1)
-    expect(repositories[1]?.projectId).toBe(2)
+    expect(group?.repositories).toHaveLength(2)
+    expect(group?.repositories[0]?.projectId).toBe(1)
+    expect(group?.repositories[1]?.projectId).toBe(2)
   })
 
   it("repositories が空配列のとき正常にパースする", () => {
-    expect(loadConfig(writeConfigFile("repositories: []"))).toEqual({ repositories: [] })
+    expect(
+      loadConfig(
+        writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
+repositories: []
+`),
+      ),
+    ).toEqual([{ accessTokenEnv: "ACCESS_TOKEN_TEAM_A", repositories: [] }])
   })
 
   it("YAML がオブジェクトでないとき例外をスローする", () => {
@@ -103,13 +115,16 @@ repositories:
   })
 
   it("repositories キーがないとき例外をスローする", () => {
-    expect(() => loadConfig(writeConfigFile("other_key: []"))).toThrow("形式が不正です")
+    expect(() =>
+      loadConfig(writeConfigFile("accessTokenEnv: ACCESS_TOKEN_TEAM_A\nother_key: []")),
+    ).toThrow("形式が不正です")
   })
 
   it("projectId が数値でないとき例外をスローする", () => {
     expect(() =>
       loadConfig(
         writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: "not-a-number"
     projectName: repo
@@ -123,6 +138,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -137,6 +153,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -152,6 +169,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -167,6 +185,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -183,10 +202,53 @@ repositories:
   })
 })
 
+describe("loadConfig（accessTokenEnv）", () => {
+  function writeWithAccessTokenEnv(line: string): string {
+    return writeConfigFile(`
+${line}
+repositories: []
+`)
+  }
+
+  it("accessTokenEnv を環境変数名としてそのまま保持する", () => {
+    const [group] = loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_TEAM_A"))
+    expect(group?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
+  })
+
+  it("accessTokenEnv がないとき例外をスローする", () => {
+    expect(() => loadConfig(writeConfigFile("repositories: []"))).toThrow("形式が不正です")
+  })
+
+  it("accessTokenEnv が ACCESS_TOKEN_ で始まらないとき例外をスローする", () => {
+    expect(() => loadConfig(writeWithAccessTokenEnv("accessTokenEnv: MY_TOKEN"))).toThrow(
+      "形式が不正です",
+    )
+  })
+
+  it("accessTokenEnv が ACCESS_TOKEN_ だけで接尾辞がないとき例外をスローする", () => {
+    expect(() => loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_"))).toThrow(
+      "形式が不正です",
+    )
+  })
+
+  it("accessTokenEnv に小文字が含まれるとき例外をスローする", () => {
+    expect(() =>
+      loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_team_a")),
+    ).toThrow("形式が不正です")
+  })
+
+  it("accessTokenEnv が文字列でないとき例外をスローする", () => {
+    expect(() => loadConfig(writeWithAccessTokenEnv("accessTokenEnv: 123"))).toThrow(
+      "形式が不正です",
+    )
+  })
+})
+
 describe("loadConfig（ディレクトリ）", () => {
-  it("ディレクトリ内の複数ファイルを結合して返す", () => {
+  it("ディレクトリ内のファイルをファイル単位のまとまりのまま返す", () => {
     const dirPath = writeConfigDir({
       "team-a.yaml": `
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: service-a
@@ -195,6 +257,7 @@ repositories:
         target: main
 `,
       "team-b.yaml": `
+accessTokenEnv: ACCESS_TOKEN_TEAM_B
 repositories:
   - projectId: 2
     projectName: service-b
@@ -203,40 +266,44 @@ repositories:
         target: main
 `,
     })
-    const { repositories } = loadConfig(dirPath)
-    expect(repositories).toHaveLength(2)
-    expect(repositories[0]?.projectId).toBe(1)
-    expect(repositories[1]?.projectId).toBe(2)
+    const groups = loadConfig(dirPath)
+    expect(groups).toHaveLength(2)
+    expect(groups[0]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
+    expect(groups[0]?.repositories[0]?.projectId).toBe(1)
+    expect(groups[1]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_B")
+    expect(groups[1]?.repositories[0]?.projectId).toBe(2)
   })
 
   it("ファイルをアルファベット順に読み込む", () => {
     const dirPath = writeConfigDir({
       "team-b.yaml": `
+accessTokenEnv: ACCESS_TOKEN_TEAM_B
 repositories:
   - projectId: 2
     projectName: service-b
     branchPairs: []
 `,
       "team-a.yaml": `
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: service-a
     branchPairs: []
 `,
     })
-    const { repositories } = loadConfig(dirPath)
-    expect(repositories[0]?.projectId).toBe(1)
-    expect(repositories[1]?.projectId).toBe(2)
+    const groups = loadConfig(dirPath)
+    expect(groups[0]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
+    expect(groups[1]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_B")
   })
 
-  it("空のディレクトリのとき空の repositories を返す", () => {
-    const dirPath = writeConfigDir({})
-    expect(loadConfig(dirPath)).toEqual({ repositories: [] })
+  it("空のディレクトリのとき空配列を返す", () => {
+    expect(loadConfig(writeConfigDir({}))).toEqual([])
   })
 
   it(".yaml / .yml 以外のファイルは無視する", () => {
     const dirPath = writeConfigDir({
       "team-a.yaml": `
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
 repositories:
   - projectId: 1
     projectName: service-a
@@ -245,13 +312,24 @@ repositories:
       "README.md": "# readme",
       ".gitkeep": "",
     })
-    const { repositories } = loadConfig(dirPath)
-    expect(repositories).toHaveLength(1)
+    expect(loadConfig(dirPath)).toHaveLength(1)
   })
 
   it("ディレクトリ内のファイルに不正な YAML があるとき例外をスローする", () => {
     const dirPath = writeConfigDir({
       "team-a.yaml": "just a string",
+    })
+    expect(() => loadConfig(dirPath)).toThrow("形式が不正です")
+  })
+
+  it("ディレクトリ内のファイルに accessTokenEnv がないとき例外をスローする", () => {
+    const dirPath = writeConfigDir({
+      "team-a.yaml": `
+repositories:
+  - projectId: 1
+    projectName: service-a
+    branchPairs: []
+`,
     })
     expect(() => loadConfig(dirPath)).toThrow("形式が不正です")
   })

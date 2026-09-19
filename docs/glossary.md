@@ -8,7 +8,7 @@
 | --------------------------------------------- | ---------- |
 | プロジェクト / projectId / projectName        | 対象の指定 |
 | ブランチペア / source / target                | 対象の指定 |
-| 設定ファイル / 設定の結合                     | 対象の指定 |
+| 設定ファイル / 設定の結合 / accessTokenEnv    | 対象の指定 |
 | 巡回                                          | 実行の単位 |
 | ドライラン                                    | 実行の単位 |
 | 処理結果（CREATED / SKIPPED / ERROR）         | 結果       |
@@ -51,12 +51,20 @@ MR を作る。1 プロジェクトに複数定義できる（`develop → stagi
 
 ### 設定ファイル
 
-`config/` 配下の `.yaml` / `.yml`。チーム単位でファイルを分けられる。
+`config/` 配下の `.yaml` / `.yml`。チーム単位でファイルを分けられる。コード上は 1 ファイル =
+`ConfigGroup` 1 件で、これがアクセストークンを割り当てる単位（グループ）にあたる。
+
+### accessTokenEnv
+
+設定ファイルのトップレベルに書く**環境変数の名前**（`AccessTokenEnvName`。必須）。そのファイルの
+リポジトリを操作するトークンがどの環境変数に入っているかの宣言で、**トークンの値そのものは
+設定ファイルに書かない**。`ACCESS_TOKEN_` で始まる英大文字・数字・アンダースコアの名前だけを許す。
 
 ### 設定の結合
 
-`CONFIG_PATH` がディレクトリのとき、配下の `.yaml` / `.yml` を**アルファベット順**に読み、
-`repositories` を連結して 1 つの `Config` にすること（`loadConfigDir`）。
+`CONFIG_PATH` がディレクトリのとき、配下の `.yaml` / `.yml` を**アルファベット順**に読むこと
+（`loadConfigDir`）。ファイルごとに `accessTokenEnv` が違うため `repositories` は連結せず、
+**ファイル単位のまとまり（`ConfigGroup`）を保ったまま** `Config`（その配列）にする。
 **同じ `projectId` が複数ファイルにあっても重複排除しない**（両方が処理される）。
 
 ## 実行の単位
@@ -124,7 +132,8 @@ MR を作る。1 プロジェクトに複数定義できる（`develop → stagi
 ### ブランド型
 
 `number` / `string` に `unique symbol` のマーカーを足して、実体は同じだが型としては
-別物にしたもの。`ProjectId` / `ProjectName` / `BranchName` / `GitLabUrl` の 4 つがある。
+別物にしたもの。`ProjectId` / `ProjectName` / `BranchName` / `GitLabUrl` /
+`AccessTokenEnvName` の 5 つがある。
 生成は factory 関数（`toProjectId` など）に限る
 （[`coding-standards.md`](./coding-standards.md)「`as` キャスト」）。
 

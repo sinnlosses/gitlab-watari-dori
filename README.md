@@ -121,6 +121,10 @@ config/
 ```yaml
 # config/my-team.yaml
 
+# このファイルのリポジトリを操作するアクセストークンが入っている環境変数の「名前」（必須）。
+# 書けるのは `ACCESS_TOKEN_` で始まる名前だけで、トークンの値そのものはここに書きません
+accessTokenEnv: ACCESS_TOKEN_MY_TEAM
+
 repositories:
   # projectId: GitLab の Settings > General または URL から確認できる数値 ID
   - projectId: 123
@@ -140,8 +144,11 @@ repositories:
         target: main
 ```
 
-> **バリデーション:** `source` / `target` が空文字の場合、または同じブランチ名を指している場合は起動時にエラーで終了します。
+> **バリデーション:** `accessTokenEnv` が無い場合、または `ACCESS_TOKEN_` で始まる英大文字・数字・アンダースコアの名前になっていない場合は起動時にエラーで終了します。
+> `source` / `target` が空文字の場合、または同じブランチ名を指している場合も起動時にエラーで終了します。
 > また `CONFIG_PATH` に作業ディレクトリ外を指すパス（`..` を含むものなど）を渡した場合も起動時にエラーで終了します。
+
+> **注意:** 現時点の実行時のトークンは `ACCESS_TOKEN` 1 本のままで、`accessTokenEnv` に書いた環境変数はまだ読まれません（グループごとの使い分けは今後対応）。
 
 設定ファイルの文法チェックのみ実行する場合:
 

@@ -52,15 +52,16 @@ export async function run(): Promise<RunResult> {
  */
 export async function process(): Promise<Record<MrCreationResult, number>> {
   const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
-  const { repositories } = loadConfig(CONFIG_PATH)
+  const configGroups = loadConfig(CONFIG_PATH)
 
   const skippedProjectIds = parseSkipProjectIds(SKIP_PROJECT_IDS)
   if (skippedProjectIds.size > 0) {
     logger.info({ event: "skip_projects", projectIds: [...skippedProjectIds] })
   }
-  const targetRepositories = repositories.filter(
-    ({ projectId }) => !skippedProjectIds.has(projectId),
-  )
+  // グループごとのクライアント作り分けは未対応のため、ここでは全グループのリポジトリを平坦化する
+  const targetRepositories = configGroups
+    .flatMap(({ repositories }) => repositories)
+    .filter(({ projectId }) => !skippedProjectIds.has(projectId))
 
   const limit = pLimit(CONCURRENCY_LIMIT)
   const mrCreationTasks = targetRepositories.flatMap(({ projectId, projectName, branchPairs }) =>

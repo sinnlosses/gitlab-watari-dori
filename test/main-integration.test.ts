@@ -32,6 +32,7 @@ import {
 import type { GitlabClient } from "../src/lib/gitlab.js"
 import { process as processFn } from "../src/main.js"
 import { toBranchName, toProjectId, toProjectName } from "../src/types.js"
+import { makeConfig } from "./helpers.js"
 
 const mockGitlab = {} as unknown as GitlabClient
 const branchPair = { source: toBranchName("develop"), target: toBranchName("main") }
@@ -54,8 +55,8 @@ describe("process - SKIP_PROJECT_IDS 統合", () => {
 
   it("SKIP_PROJECT_IDS に含まれるプロジェクトは branchExists を呼び出さない", async () => {
     mockEnv.SKIP_PROJECT_IDS = "1"
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo-skip"),
@@ -66,8 +67,8 @@ describe("process - SKIP_PROJECT_IDS 統合", () => {
           projectName: toProjectName("repo-ok"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
 
     await processFn()
 
@@ -82,8 +83,8 @@ describe("process - SKIP_PROJECT_IDS 統合", () => {
 
   it("SKIP_PROJECT_IDS に含まれるプロジェクトを除いた件数を返す", async () => {
     mockEnv.SKIP_PROJECT_IDS = "1"
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo-skip"),
@@ -94,8 +95,8 @@ describe("process - SKIP_PROJECT_IDS 統合", () => {
           projectName: toProjectName("repo-ok"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
 
     await expect(processFn()).resolves.toEqual({ CREATED: 1, SKIPPED: 0, ERROR: 0 })
   })
@@ -107,8 +108,8 @@ describe("process - DRY_RUN 統合", () => {
     mockEnv.DRY_RUN = true
     mockEnv.CONCURRENCY_LIMIT = 5
     vi.mocked(createClient).mockReturnValue(mockGitlab)
-    vi.mocked(loadConfig).mockReturnValue({
-      repositories: [
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
         {
           projectId: toProjectId(1),
           projectName: toProjectName("repo-a"),
@@ -119,8 +120,8 @@ describe("process - DRY_RUN 統合", () => {
           projectName: toProjectName("repo-b"),
           branchPairs: [branchPair],
         },
-      ],
-    })
+      ]),
+    )
     vi.mocked(branchExists).mockResolvedValue(true)
     vi.mocked(hasDiff).mockResolvedValue(true)
     vi.mocked(openMergeRequestExists).mockResolvedValue(false)
@@ -148,7 +149,7 @@ describe("process - CONCURRENCY_LIMIT 統合", () => {
     mockEnv.DRY_RUN = false
     mockEnv.CONCURRENCY_LIMIT = 5
     vi.mocked(createClient).mockReturnValue(mockGitlab)
-    vi.mocked(loadConfig).mockReturnValue({ repositories: [] })
+    vi.mocked(loadConfig).mockReturnValue(makeConfig([]))
   })
 
   afterEach(() => {

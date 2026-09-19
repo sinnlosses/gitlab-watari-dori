@@ -27,6 +27,7 @@ git switch -c feat-empty main && git push -u origin feat-empty
 
 ```yaml
 # smoke-config.yaml（.gitignore されないので、確認後に消す）
+accessTokenEnv: ACCESS_TOKEN_SMOKE
 repositories:
   - projectId: <検証用プロジェクトの数値 ID>
     projectName: smoke

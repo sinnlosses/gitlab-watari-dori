@@ -1,3 +1,5 @@
+accessTokenEnv: ACCESS_TOKEN_TEAM_A
+
 repositories:
   - projectId: 82861977
     projectName: sample-develop-client

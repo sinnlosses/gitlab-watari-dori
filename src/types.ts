@@ -27,15 +27,33 @@ export function toGitLabUrl(s: string): GitLabUrl {
   return s as GitLabUrl
 }
 
+declare const accessTokenEnvNameBrand: unique symbol
+/**
+ * アクセストークンが入っている環境変数の名前（`ACCESS_TOKEN_TEAM_A` など）。
+ * 素の文字列（トークンの値）と取り違えないようブランド型にしている。
+ * 名前の形式は `src/lib/config.ts` の zod スキーマが検証する。
+ */
+export type AccessTokenEnvName = string & { readonly [accessTokenEnvNameBrand]: never }
+export function toAccessTokenEnvName(s: string): AccessTokenEnvName {
+  return s as AccessTokenEnvName
+}
+
 export type RepoConfig = {
   readonly projectId: ProjectId
   readonly projectName: ProjectName
   readonly branchPairs: readonly BranchPair[]
 }
 
-export type Config = {
+/**
+ * 設定ファイル 1 つ分のまとまり（= トークンを割り当てる単位の「グループ」）。
+ * `accessTokenEnv` は環境変数名であり、トークンの値そのものではない。
+ */
+export type ConfigGroup = {
+  readonly accessTokenEnv: AccessTokenEnvName
   readonly repositories: readonly RepoConfig[]
 }
+
+export type Config = readonly ConfigGroup[]
 
 export type MrCreationResult = "CREATED" | "SKIPPED" | "ERROR"
 
