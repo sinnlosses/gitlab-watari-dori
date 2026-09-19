@@ -1,4 +1,4 @@
-import { type GitLabUrl, toGitLabUrl } from "../types.js"
+import { type AccessTokenEnvName, type GitLabUrl, toGitLabUrl } from "../types.js"
 
 export function loadEnv(key: string): string {
   const value = process.env[key]
@@ -9,6 +9,26 @@ export function loadEnv(key: string): string {
 export function loadOptionalEnv(key: string): string | undefined {
   const value = process.env[key]
   return value?.trim() ? value : undefined
+}
+
+/**
+ * グループが宣言した環境変数からアクセストークンの値を取り出す。未設定なら例外をスローする。
+ * 環境変数名は設定ファイル由来で実行時にしか分からないため、トップレベルの const では表せない。
+ */
+export function loadAccessToken(envName: AccessTokenEnvName): string {
+  return loadEnv(envName)
+}
+
+/**
+ * 宣言されたアクセストークンの環境変数がすべて設定されているかを検証する。
+ * 未設定のものがあれば、足りない名前をすべて 1 つの例外にまとめてスローする
+ * （1 つずつ落とすと、設定漏れを何度も実行して見つけることになるため）。
+ */
+export function assertAccessTokensPresent(envNames: readonly AccessTokenEnvName[]): void {
+  const missing = [...new Set(envNames)].filter((name) => loadOptionalEnv(name) === undefined)
+  if (missing.length > 0) {
+    throw new Error(`アクセストークンの環境変数が未設定です: ${missing.join(", ")}`)
+  }
 }
 
 export function validateGitlabUrl(raw: string): GitLabUrl {
@@ -33,7 +53,6 @@ export function parseConcurrencyLimit(raw: string | undefined): number {
 }
 
 export const GITLAB_URL = validateGitlabUrl(loadEnv("GITLAB_URL"))
-export const ACCESS_TOKEN = loadEnv("ACCESS_TOKEN")
 export const SKIP_PROJECT_IDS = loadOptionalEnv("SKIP_PROJECT_IDS")
 export const CONFIG_PATH = loadOptionalEnv("CONFIG_PATH")
 export const CONCURRENCY_LIMIT = parseConcurrencyLimit(loadOptionalEnv("CONCURRENCY_LIMIT"))

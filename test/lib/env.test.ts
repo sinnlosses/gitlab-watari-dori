@@ -1,11 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import {
+  assertAccessTokensPresent,
+  loadAccessToken,
   loadEnv,
   loadOptionalEnv,
   parseConcurrencyLimit,
   validateGitlabUrl,
 } from "../../src/lib/env.js"
+import type { AccessTokenEnvName } from "../../src/types.js"
+import { toAccessTokenEnvName } from "../../src/types.js"
 
 const TEST_KEY = "WATARI_DORI_TEST_VAR"
 
@@ -117,5 +121,71 @@ describe("parseConcurrencyLimit", () => {
 
   it("21 のとき例外をスローする", () => {
     expect(() => parseConcurrencyLimit("21")).toThrow("CONCURRENCY_LIMIT")
+  })
+})
+
+describe("loadAccessToken", () => {
+  const envName = toAccessTokenEnvName("ACCESS_TOKEN_WATARI_DORI_TEST")
+
+  afterEach(() => {
+    delete process.env[envName]
+  })
+
+  it("設定済みの環境変数からトークンの値を返す", () => {
+    process.env[envName] = "glpat-test"
+    expect(loadAccessToken(envName)).toBe("glpat-test")
+  })
+
+  it("未設定のとき環境変数名を含む例外をスローする", () => {
+    expect(() => loadAccessToken(envName)).toThrow(envName)
+  })
+})
+
+/** `assertAccessTokensPresent` がスローした例外のメッセージを取り出す。 */
+function missingMessage(envNames: readonly AccessTokenEnvName[]): string {
+  try {
+    assertAccessTokensPresent(envNames)
+    return ""
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err)
+  }
+}
+
+describe("assertAccessTokensPresent", () => {
+  const first = toAccessTokenEnvName("ACCESS_TOKEN_WATARI_DORI_A")
+  const second = toAccessTokenEnvName("ACCESS_TOKEN_WATARI_DORI_B")
+
+  afterEach(() => {
+    delete process.env[first]
+    delete process.env[second]
+  })
+
+  it("空配列のとき例外をスローしない", () => {
+    expect(() => assertAccessTokensPresent([])).not.toThrow()
+  })
+
+  it("すべて設定済みのとき例外をスローしない", () => {
+    process.env[first] = "token-a"
+    process.env[second] = "token-b"
+    expect(() => assertAccessTokensPresent([first, second])).not.toThrow()
+  })
+
+  it("未設定の環境変数があるときその名前を含む例外をスローする", () => {
+    process.env[first] = "token-a"
+    expect(() => assertAccessTokensPresent([first, second])).toThrow(second)
+  })
+
+  it("未設定の環境変数が複数あるときすべての名前を1つの例外にまとめる", () => {
+    expect(missingMessage([first, second])).toContain(first)
+    expect(missingMessage([first, second])).toContain(second)
+  })
+
+  it("空文字の環境変数を未設定として扱う", () => {
+    process.env[first] = ""
+    expect(() => assertAccessTokensPresent([first])).toThrow(first)
+  })
+
+  it("同じ環境変数名が重複してもエラーメッセージに1回だけ載せる", () => {
+    expect(missingMessage([first, first]).match(new RegExp(first, "g"))).toHaveLength(1)
   })
 })

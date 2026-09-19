@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockEnv = vi.hoisted(() => ({
   GITLAB_URL: "https://gitlab.test" as string,
-  ACCESS_TOKEN: "test-token" as string,
+  loadAccessToken: (envName: string): string => `token-for-${envName}`,
+  assertAccessTokensPresent: (): void => {},
   SKIP_PROJECT_IDS: undefined as string | undefined,
   CONFIG_PATH: undefined as string | undefined,
   CONCURRENCY_LIMIT: 5 as number,

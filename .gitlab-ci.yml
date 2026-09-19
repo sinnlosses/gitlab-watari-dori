@@ -21,7 +21,9 @@ spec:
 # 【必須】Settings > CI/CD > Variables に以下を登録してください:
 #   GITLAB_URL    — GitLab の URL（例: https://gitlab.example.com）
 #                   ※ Protected: ON 推奨（任意 URL 注入を防ぎます）
-#   ACCESS_TOKEN  — GitLab Personal Access Token
+#   ACCESS_TOKEN_<名前> — GitLab Personal Access Token。
+#                   config/ の各ファイルの accessTokenEnv に書いた名前で、
+#                   設定ファイルの数だけ登録します（例: ACCESS_TOKEN_TEAM_A）
 #                   ※ Masked: ON / Protected: ON 推奨
 # ──────────────────────────────────────────────────────────────────
 

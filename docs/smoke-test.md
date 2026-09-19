@@ -10,7 +10,7 @@
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | 検証用 GitLab プロジェクト | 壊してよいもの 1 つ。`api` スコープのトークンでアクセスできること                  |
 | ブランチ 3 本              | `main`（= target）、`feat-diff`（差分あり）、`feat-empty`（`main` と同一コミット） |
-| `.env`                     | `GITLAB_URL` と `ACCESS_TOKEN`                                                     |
+| `.env`                     | `GITLAB_URL` と、設定ファイルの `accessTokenEnv` が指す環境変数                    |
 | 検証用設定ファイル         | `CONFIG_PATH` で指す。`config/` は汚さない                                         |
 
 ブランチの作り方:
@@ -45,7 +45,7 @@ repositories:
 ```bash
 # 0. 環境変数を用意する（.env でもよい）
 export GITLAB_URL=https://gitlab.example.com
-export ACCESS_TOKEN=<api スコープのトークン>
+export ACCESS_TOKEN_SMOKE=<api スコープのトークン>  # 設定ファイルの accessTokenEnv と同じ名前
 export CONFIG_PATH=smoke-config.yaml
 ```
 
@@ -89,7 +89,7 @@ GitLab の UI でも確認する。
 ### パス4: 認証エラー（即時終了すること）
 
 ```bash
-ACCESS_TOKEN=invalid-token pnpm dev
+ACCESS_TOKEN_SMOKE=invalid-token pnpm dev
 ```
 
 `fatal_error` イベントが出て即座に終了し、終了コードが `1` であること。
@@ -109,7 +109,7 @@ SKIP_PROJECT_IDS=<検証用プロジェクトの数値 ID> DRY_RUN=true pnpm dev
 1. パス2 で作られた MR を閉じる（マージしない）
 2. `feat-diff` / `feat-empty` ブランチを削除する
 3. `smoke-config.yaml` を削除する
-4. `unset GITLAB_URL ACCESS_TOKEN CONFIG_PATH`
+4. `unset GITLAB_URL ACCESS_TOKEN_SMOKE CONFIG_PATH`
 
 ## 繰り返すときの注意
 

@@ -21,7 +21,8 @@ GitLab CI のスケジュールパイプラインから実行する前提で、*
 
 - Node.js 22.x, pnpm 11.x
 - `pnpm install` で依存関係をインストール
-- ローカル実行には `.env` に `GITLAB_URL` と `ACCESS_TOKEN`（`api` スコープ）を設定する
+- ローカル実行には `.env` に `GITLAB_URL` と、各設定ファイルの `accessTokenEnv` が指す
+  `ACCESS_TOKEN_*`（`api` スコープ）を設定する
 - タスク運用スキル（`/next-task`・`/plan-tasks`・`/list-tasks`）はユーザー単位
   （`~/.claude/skills/`）に導入されている前提。未導入でもビルド・テストは通るが、
   下の「進捗管理とHandoff」の進め方はできない
@@ -79,8 +80,8 @@ pnpm build && pnpm start            # ビルドしてから実行
 `create-merge-requests`（schedule / 手動実行時のみ本体を実行）・`renovate`（依存更新。本体の
 処理とは無関係な別機能）の 4 ジョブ。
 
-CI/CD Variables には `GITLAB_URL` と `ACCESS_TOKEN` を登録する。`ACCESS_TOKEN` は必ず
-**Masked: ON / Protected: ON**（手順は [`README.md`](./README.md)「CI/CD」が正典）。
+CI/CD Variables には `GITLAB_URL` と、各設定ファイルの `accessTokenEnv` が指す
+`ACCESS_TOKEN_*` を登録する。トークンの変数は必ず **Masked: ON / Protected: ON**（手順は [`README.md`](./README.md)「CI/CD」が正典）。
 
 ## コーディング規約
 

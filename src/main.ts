@@ -2,12 +2,13 @@ import pLimit from "p-limit"
 
 import { loadConfig } from "./lib/config.js"
 import {
-  ACCESS_TOKEN,
   CONCURRENCY_LIMIT,
   CONFIG_PATH,
   DRY_RUN,
   GITLAB_URL,
   SKIP_PROJECT_IDS,
+  assertAccessTokensPresent,
+  loadAccessToken,
 } from "./lib/env.js"
 import {
   type GitlabClient,
@@ -51,34 +52,44 @@ export async function run(): Promise<RunResult> {
  * DRY_RUN=true のときはMRを作成せず、作成対象のログのみ出力する。
  */
 export async function process(): Promise<Record<MrCreationResult, number>> {
-  const gitlabClient = createClient(GITLAB_URL, ACCESS_TOKEN)
   const configGroups = loadConfig(CONFIG_PATH)
+  // MR を 1 件も作らないうちに設定漏れで落とすため、全グループぶんをここでまとめて検証する
+  assertAccessTokensPresent(configGroups.map(({ accessTokenEnv }) => accessTokenEnv))
 
   const skippedProjectIds = parseSkipProjectIds(SKIP_PROJECT_IDS)
   if (skippedProjectIds.size > 0) {
     logger.info({ event: "skip_projects", projectIds: [...skippedProjectIds] })
   }
-  // グループごとのクライアント作り分けは未対応のため、ここでは全グループのリポジトリを平坦化する
-  const targetRepositories = configGroups
-    .flatMap(({ repositories }) => repositories)
-    .filter(({ projectId }) => !skippedProjectIds.has(projectId))
 
+  // クライアントはグループ（設定ファイル 1 つ）ごとに作る一方、pLimit は 1 つだけ作って
+  // 全グループで共有し、同時実行数が CONCURRENCY_LIMIT を超えないようにする
   const limit = pLimit(CONCURRENCY_LIMIT)
-  const mrCreationTasks = targetRepositories.flatMap(({ projectId, projectName, branchPairs }) =>
-    branchPairs.map((branchPair) =>
-      limit(async () => {
-        try {
-          return await createMrIfNeeded(gitlabClient, projectId, projectName, branchPair, DRY_RUN)
-        } catch (err) {
-          // FatalError を検出した瞬間にキューをクリアし、後続タスクが開始されるのを防ぐ。
-          // p-limit は各タスク完了後に next() を呼んで次のタスクを起動するため、
-          // Promise.all の catch 側では next() の前に割り込めない。
-          if (err instanceof FatalError) limit.clearQueue()
-          throw err
-        }
-      }),
-    ),
-  )
+  const mrCreationTasks = configGroups.flatMap(({ accessTokenEnv, repositories }) => {
+    const gitlabClient = createClient(GITLAB_URL, loadAccessToken(accessTokenEnv))
+    return repositories
+      .filter(({ projectId }) => !skippedProjectIds.has(projectId))
+      .flatMap(({ projectId, projectName, branchPairs }) =>
+        branchPairs.map((branchPair) =>
+          limit(async () => {
+            try {
+              return await createMrIfNeeded(
+                gitlabClient,
+                projectId,
+                projectName,
+                branchPair,
+                DRY_RUN,
+              )
+            } catch (err) {
+              // FatalError を検出した瞬間にキューをクリアし、後続タスクが開始されるのを防ぐ。
+              // p-limit は各タスク完了後に next() を呼んで次のタスクを起動するため、
+              // Promise.all の catch 側では next() の前に割り込めない。
+              if (err instanceof FatalError) limit.clearQueue()
+              throw err
+            }
+          }),
+        ),
+      )
+  })
 
   const results = await Promise.all(mrCreationTasks)
 

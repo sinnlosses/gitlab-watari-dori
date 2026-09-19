@@ -57,6 +57,10 @@ factory を通していないか、そもそも型が合っていないかのど
 値はモジュールのトップレベルで評価・検証する。**設定ミスは起動直後に落ちるべき**で、
 並列処理の途中で初めて気づくのは遅い（[`architecture.md`](./architecture.md)「設計判断」）。
 
+例外はアクセストークンで、環境変数名が設定ファイル由来のため `const` にできない。
+`loadAccessToken` / `assertAccessTokensPresent` を使い、MR を 1 件も作らないうちに
+`process()` の冒頭でまとめて検証する。
+
 新しい環境変数を足すときは、`env.ts` に `export const` を足し、
 [`README.md`](../README.md) の環境変数表と `.gitlab-ci.yml` の `variables` も同時に更新する。
 

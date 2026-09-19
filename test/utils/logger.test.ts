@@ -104,6 +104,18 @@ describe("logger", () => {
       expect(output.result).toBe("CREATED")
     })
 
+    it("ACCESS_TOKEN_ で始まるグループごとのキーの値も [REDACTED] に置換する", () => {
+      logger.info({ event: "test", ACCESS_TOKEN_TEAM_A: "glpat-team-a" })
+      const output = JSON.parse(lastLog)
+      expect(output.ACCESS_TOKEN_TEAM_A).toBe("[REDACTED]")
+    })
+
+    it("環境変数名を載せる accessTokenEnv キーはそのまま出力する", () => {
+      logger.info({ event: "test", accessTokenEnv: "ACCESS_TOKEN_TEAM_A" })
+      const output = JSON.parse(lastLog)
+      expect(output.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
+    })
+
     it("キーの大文字小文字を区別しない", () => {
       logger.info({ event: "test", ACCESS_TOKEN: "top-secret" })
       const output = JSON.parse(lastLog)

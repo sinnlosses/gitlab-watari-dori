@@ -2,14 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/lib/gitlab.js")
 vi.mock("../src/lib/config.js")
-vi.mock("../src/lib/env.js", () => ({
-  GITLAB_URL: "https://gitlab.test",
-  ACCESS_TOKEN: "test-token",
-  SKIP_PROJECT_IDS: undefined,
-  CONFIG_PATH: undefined,
-  CONCURRENCY_LIMIT: 5,
-  DRY_RUN: false,
-}))
+// トークン解決だけは実物を使い、実際の process.env を見て落ちることを確かめられるようにする
+vi.mock("../src/lib/env.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/env.js")>()
+  return {
+    GITLAB_URL: "https://gitlab.test",
+    SKIP_PROJECT_IDS: undefined,
+    CONFIG_PATH: undefined,
+    CONCURRENCY_LIMIT: 5,
+    DRY_RUN: false,
+    loadAccessToken: actual.loadAccessToken,
+    assertAccessTokensPresent: actual.assertAccessTokensPresent,
+  }
+})
 vi.mock("../src/utils/logger.js", () => ({
   logger: { info: vi.fn(), error: vi.fn() },
 }))
@@ -24,7 +29,7 @@ import {
 } from "../src/lib/gitlab.js"
 import type { GitlabClient } from "../src/lib/gitlab.js"
 import { parseSkipProjectIds, createMrIfNeeded, run, process as processFn } from "../src/main.js"
-import { toBranchName, toProjectId, toProjectName } from "../src/types.js"
+import { toAccessTokenEnvName, toBranchName, toProjectId, toProjectName } from "../src/types.js"
 import { FatalError } from "../src/utils/errors.js"
 import { makeConfig, makeHttpError } from "./helpers.js"
 
@@ -361,7 +366,16 @@ describe("process", () => {
     expect(vi.mocked(branchExists).mock.calls.length).toBeLessThanOrEqual(10)
   })
 
-  it("createClient に GITLAB_URL と ACCESS_TOKEN を渡す", async () => {
+  it("createClient に GITLAB_URL とグループのトークンを渡す", async () => {
+    vi.mocked(loadConfig).mockReturnValue(
+      makeConfig([
+        {
+          projectId: toProjectId(1),
+          projectName: toProjectName("repo"),
+          branchPairs: [branchPair],
+        },
+      ]),
+    )
     await processFn()
     expect(createClient).toHaveBeenCalledWith("https://gitlab.test", "test-token")
   })
@@ -453,5 +467,74 @@ describe("run", () => {
     )
     vi.mocked(branchExists).mockResolvedValue(false)
     await expect(run()).resolves.toBe("PARTIAL_FAILURE")
+  })
+})
+
+describe("process - グループごとのアクセストークン", () => {
+  const teamA = toAccessTokenEnvName("ACCESS_TOKEN_TEAM_A")
+  const teamB = toAccessTokenEnvName("ACCESS_TOKEN_TEAM_B")
+  const clientA = { name: "a" } as unknown as GitlabClient
+  const clientB = { name: "b" } as unknown as GitlabClient
+
+  const twoGroups = [
+    {
+      accessTokenEnv: teamA,
+      repositories: [
+        {
+          projectId: toProjectId(1),
+          projectName: toProjectName("repo-a"),
+          branchPairs: [branchPair],
+        },
+      ],
+    },
+    {
+      accessTokenEnv: teamB,
+      repositories: [
+        {
+          projectId: toProjectId(2),
+          projectName: toProjectName("repo-b"),
+          branchPairs: [branchPair],
+        },
+      ],
+    },
+  ]
+
+  beforeEach(() => {
+    process.env[teamA] = "token-a"
+    process.env[teamB] = "token-b"
+    vi.mocked(createClient).mockImplementation((_host, token) =>
+      token === "token-a" ? clientA : clientB,
+    )
+    vi.mocked(loadConfig).mockReturnValue(twoGroups)
+    vi.mocked(branchExists).mockResolvedValue(true)
+    vi.mocked(hasDiff).mockResolvedValue(true)
+    vi.mocked(openMergeRequestExists).mockResolvedValue(false)
+    vi.mocked(createMergeRequest).mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    delete process.env[teamA]
+    delete process.env[teamB]
+    vi.clearAllMocks()
+  })
+
+  it("グループごとに宣言された環境変数のトークンでクライアントを作る", async () => {
+    await processFn()
+    expect(createClient).toHaveBeenCalledWith("https://gitlab.test", "token-a")
+    expect(createClient).toHaveBeenCalledWith("https://gitlab.test", "token-b")
+  })
+
+  it("各リポジトリを自分のグループのクライアントで処理する", async () => {
+    await processFn()
+    expect(createMergeRequest).toHaveBeenCalledWith(clientA, toProjectId(1), branchPair)
+    expect(createMergeRequest).toHaveBeenCalledWith(clientB, toProjectId(2), branchPair)
+  })
+
+  it("宣言された環境変数が未設定のとき MR 作成を1件も試みずにエラーになる", async () => {
+    delete process.env[teamB]
+    await expect(processFn()).rejects.toThrow(teamB)
+    expect(createClient).not.toHaveBeenCalled()
+    expect(branchExists).not.toHaveBeenCalled()
+    expect(createMergeRequest).not.toHaveBeenCalled()
   })
 })

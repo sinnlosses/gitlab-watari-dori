@@ -115,12 +115,14 @@
 
 - すべて JSON 1 行で標準出力・標準エラーに書く。CI ログからそのまま収集・解析できること
 - `run_start` → 各ペアの結果 → `summary` → `run_end` の順に出す
-- `token` / `password` / `secret` などのキーは値を `[REDACTED]` に置き換える
+- `token` / `password` / `secret` などのキー、および `ACCESS_TOKEN_` で始まるキーは
+  値を `[REDACTED]` に置き換える
 
 ### 4.4 セキュリティ
 
 - アクセストークンは環境変数のみで受け取る。設定ファイルには書かない
-- CI では `ACCESS_TOKEN` を **Masked: ON / Protected: ON** で登録する
+- CI では各グループのトークン（`ACCESS_TOKEN_` で始まる環境変数）を
+  **Masked: ON / Protected: ON** で登録する
 - `CONFIG_PATH` のパストラバーサルを拒否する
 
 ## 5. 参照

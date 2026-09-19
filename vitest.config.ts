@@ -5,7 +5,7 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     env: {
       GITLAB_URL: "https://gitlab.test",
-      ACCESS_TOKEN: "test-token",
+      ACCESS_TOKEN_TEST: "test-token",
     },
     reporters: ["verbose", "junit"],
     outputFile: {

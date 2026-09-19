@@ -55,13 +55,13 @@ cp config/team-a.yaml config/my-team.yaml
 
 # 3. 動作確認（API 呼び出しなし・安全）
 GITLAB_URL=https://gitlab.example.com \
-ACCESS_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx \
+ACCESS_TOKEN_TEAM_A=glpat-xxxxxxxxxxxxxxxxxxxx \
 DRY_RUN=true \
 pnpm dev
 
 # 4. 実行
 GITLAB_URL=https://gitlab.example.com \
-ACCESS_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx \
+ACCESS_TOKEN_TEAM_A=glpat-xxxxxxxxxxxxxxxxxxxx \
 pnpm dev
 ```
 
@@ -99,14 +99,14 @@ flowchart TD
 
 ### 環境変数
 
-| 変数名              | 必須 | デフォルト | 説明                                                                                                                                                                                                                                          |
-| ------------------- | :--: | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITLAB_URL`        |  ✓   | —          | GitLab インスタンスの URL（`http://` または `https://` で始まる形式）                                                                                                                                                                         |
-| `ACCESS_TOKEN`      |  ✓   | —          | `api` スコープを持つ Personal Access Token または Group/Project Access Token。**同一グループ内の複数リポジトリを扱う場合は Group Access Token を推奨**（Personal Access Token の `api` スコープはインスタンス全体への読み書き権限を持ちます） |
-| `SKIP_PROJECT_IDS`  |      | —          | MR 作成をスキップするプロジェクト ID（カンマ区切り、例: `"123,456"`）                                                                                                                                                                         |
-| `CONFIG_PATH`       |      | `config/`  | 設定ファイルまたはディレクトリのパス（作業ディレクトリ外のパスは拒否されます）                                                                                                                                                                |
-| `CONCURRENCY_LIMIT` |      | `5`        | 並列実行数（1〜20 の整数。範囲外・非整数はエラーで終了）                                                                                                                                                                                      |
-| `DRY_RUN`           |      | `false`    | `"true"` のとき MR 作成のみをスキップします。ブランチ存在確認・差分確認・既存 MR 確認は実行されるため、「どのペアで MR が作成されるか」を事前確認できます                                                                                     |
+| 変数名              | 必須 | デフォルト | 説明                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | :--: | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GITLAB_URL`        |  ✓   | —          | GitLab インスタンスの URL（`http://` または `https://` で始まる形式）                                                                                                                                                                                                                                                                                                                |
+| `ACCESS_TOKEN_*`    |  ✓   | —          | `api` スコープを持つ Personal Access Token または Group/Project Access Token。**変数名は固定ではなく、各設定ファイルの `accessTokenEnv` に書いた名前**（例: `ACCESS_TOKEN_TEAM_A`）。設定ファイルの数だけ用意します。**同一グループ内の複数リポジトリを扱う場合は Group Access Token を推奨**（Personal Access Token の `api` スコープはインスタンス全体への読み書き権限を持ちます） |
+| `SKIP_PROJECT_IDS`  |      | —          | MR 作成をスキップするプロジェクト ID（カンマ区切り、例: `"123,456"`）                                                                                                                                                                                                                                                                                                                |
+| `CONFIG_PATH`       |      | `config/`  | 設定ファイルまたはディレクトリのパス（作業ディレクトリ外のパスは拒否されます）                                                                                                                                                                                                                                                                                                       |
+| `CONCURRENCY_LIMIT` |      | `5`        | 並列実行数（1〜20 の整数。範囲外・非整数はエラーで終了）                                                                                                                                                                                                                                                                                                                             |
+| `DRY_RUN`           |      | `false`    | `"true"` のとき MR 作成のみをスキップします。ブランチ存在確認・差分確認・既存 MR 確認は実行されるため、「どのペアで MR が作成されるか」を事前確認できます                                                                                                                                                                                                                            |
 
 ### config/
 
@@ -148,7 +148,7 @@ repositories:
 > `source` / `target` が空文字の場合、または同じブランチ名を指している場合も起動時にエラーで終了します。
 > また `CONFIG_PATH` に作業ディレクトリ外を指すパス（`..` を含むものなど）を渡した場合も起動時にエラーで終了します。
 
-> **注意:** 現時点の実行時のトークンは `ACCESS_TOKEN` 1 本のままで、`accessTokenEnv` に書いた環境変数はまだ読まれません（グループごとの使い分けは今後対応）。
+> **トークンの使い分け:** ファイルごとに `accessTokenEnv` が指す環境変数からトークンを読み、そのファイルのリポジトリはそのトークンで処理します。宣言された環境変数が 1 つでも未設定の場合は、MR を 1 件も作らずに起動時エラーで終了します。
 
 設定ファイルの文法チェックのみ実行する場合:
 
@@ -186,12 +186,12 @@ pnpm lint:validate-config
 
 1. **Settings > CI/CD > Variables** に以下を登録する
 
-   | 変数名         | Masked | Protected | 説明                            |
-   | -------------- | :----: | :-------: | ------------------------------- |
-   | `GITLAB_URL`   |        |           | GitLab インスタンスの URL       |
-   | `ACCESS_TOKEN` |   ✓    |     ✓     | Personal / Project Access Token |
+   | 変数名                | Masked | Protected | 説明                                                                        |
+   | --------------------- | :----: | :-------: | --------------------------------------------------------------------------- |
+   | `GITLAB_URL`          |        |           | GitLab インスタンスの URL                                                   |
+   | `ACCESS_TOKEN_<名前>` |   ✓    |     ✓     | Personal / Project Access Token。設定ファイルの `accessTokenEnv` ごとに登録 |
 
-   > **セキュリティ:** `ACCESS_TOKEN` は必ず **Masked: ON / Protected: ON** で登録してください。ジョブログへの値の露出を防ぎます。Project Access Token を使用する場合はロールを `Developer` 以上に設定してください。
+   > **セキュリティ:** トークンの変数は必ず **Masked: ON / Protected: ON** で登録してください。ジョブログへの値の露出を防ぎます。Project Access Token を使用する場合はロールを `Developer` 以上に設定してください。
 
 2. **CI/CD > Schedules** でスケジュールを作成する（例: 毎朝 9:00 JST → `0 0 * * *`）
 
@@ -222,11 +222,11 @@ pnpm test             # テスト
 pnpm test:coverage    # カバレッジ付きテスト
 
 # ローカル実行（TypeScript 直接）
-GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm dev
+GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN_TEAM_A=<token> pnpm dev
 
 # 本番ビルド後に実行
 pnpm build
-GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm start
+GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN_TEAM_A=<token> pnpm start
 ```
 
 ### プロジェクト構成
