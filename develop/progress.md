@@ -2,6 +2,12 @@
 
 ## 完了したこと
 
+### 2026-09-20 サンプル設定の識別子を team から group に揃える（T-004）
+
+`config/team-{a,b}.yaml` を `group-{a,b}.yaml` に `git mv` し、`ACCESS_TOKEN_TEAM_*` を
+`ACCESS_TOKEN_GROUP_*` へ。README・.env.example・.gitlab-ci.yml・src のコメントとエラー
+メッセージ・テストの例示もあわせて置き換えた。
+
 ### 2026-09-20 グループごとのトークンに合わせてドキュメント・CI 設定を追随（T-003）
 
 README・.gitlab-ci.yml・CLAUDE.md・docs/ の記述は直前のコミットで既に追随済みだったため、

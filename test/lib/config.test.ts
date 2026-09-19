@@ -49,7 +49,7 @@ describe("loadConfig（ファイル）", () => {
     expect(
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: my-repo
@@ -62,7 +62,7 @@ repositories:
       ),
     ).toEqual([
       {
-        accessTokenEnv: "ACCESS_TOKEN_TEAM_A",
+        accessTokenEnv: "ACCESS_TOKEN_GROUP_A",
         repositories: [
           {
             projectId: 1,
@@ -80,7 +80,7 @@ repositories:
   it("複数リポジトリをすべてパースする", () => {
     const [group] = loadConfig(
       writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: repo-a
@@ -103,11 +103,11 @@ repositories:
     expect(
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories: []
 `),
       ),
-    ).toEqual([{ accessTokenEnv: "ACCESS_TOKEN_TEAM_A", repositories: [] }])
+    ).toEqual([{ accessTokenEnv: "ACCESS_TOKEN_GROUP_A", repositories: [] }])
   })
 
   it("YAML がオブジェクトでないとき例外をスローする", () => {
@@ -116,7 +116,7 @@ repositories: []
 
   it("repositories キーがないとき例外をスローする", () => {
     expect(() =>
-      loadConfig(writeConfigFile("accessTokenEnv: ACCESS_TOKEN_TEAM_A\nother_key: []")),
+      loadConfig(writeConfigFile("accessTokenEnv: ACCESS_TOKEN_GROUP_A\nother_key: []")),
     ).toThrow("形式が不正です")
   })
 
@@ -124,7 +124,7 @@ repositories: []
     expect(() =>
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: "not-a-number"
     projectName: repo
@@ -138,7 +138,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -153,7 +153,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -169,7 +169,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -185,7 +185,7 @@ repositories:
     expect(() =>
       loadConfig(
         writeConfigFile(`
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: repo
@@ -211,8 +211,8 @@ repositories: []
   }
 
   it("accessTokenEnv を環境変数名としてそのまま保持する", () => {
-    const [group] = loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_TEAM_A"))
-    expect(group?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
+    const [group] = loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_GROUP_A"))
+    expect(group?.accessTokenEnv).toBe("ACCESS_TOKEN_GROUP_A")
   })
 
   it("accessTokenEnv がないとき例外をスローする", () => {
@@ -233,7 +233,7 @@ repositories: []
 
   it("accessTokenEnv に小文字が含まれるとき例外をスローする", () => {
     expect(() =>
-      loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_team_a")),
+      loadConfig(writeWithAccessTokenEnv("accessTokenEnv: ACCESS_TOKEN_group_a")),
     ).toThrow("形式が不正です")
   })
 
@@ -247,8 +247,8 @@ repositories: []
 describe("loadConfig（ディレクトリ）", () => {
   it("ディレクトリ内のファイルをファイル単位のまとまりのまま返す", () => {
     const dirPath = writeConfigDir({
-      "team-a.yaml": `
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+      "group-a.yaml": `
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: service-a
@@ -256,8 +256,8 @@ repositories:
       - source: develop
         target: main
 `,
-      "team-b.yaml": `
-accessTokenEnv: ACCESS_TOKEN_TEAM_B
+      "group-b.yaml": `
+accessTokenEnv: ACCESS_TOKEN_GROUP_B
 repositories:
   - projectId: 2
     projectName: service-b
@@ -268,23 +268,23 @@ repositories:
     })
     const groups = loadConfig(dirPath)
     expect(groups).toHaveLength(2)
-    expect(groups[0]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
+    expect(groups[0]?.accessTokenEnv).toBe("ACCESS_TOKEN_GROUP_A")
     expect(groups[0]?.repositories[0]?.projectId).toBe(1)
-    expect(groups[1]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_B")
+    expect(groups[1]?.accessTokenEnv).toBe("ACCESS_TOKEN_GROUP_B")
     expect(groups[1]?.repositories[0]?.projectId).toBe(2)
   })
 
   it("ファイルをアルファベット順に読み込む", () => {
     const dirPath = writeConfigDir({
-      "team-b.yaml": `
-accessTokenEnv: ACCESS_TOKEN_TEAM_B
+      "group-b.yaml": `
+accessTokenEnv: ACCESS_TOKEN_GROUP_B
 repositories:
   - projectId: 2
     projectName: service-b
     branchPairs: []
 `,
-      "team-a.yaml": `
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+      "group-a.yaml": `
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: service-a
@@ -292,8 +292,8 @@ repositories:
 `,
     })
     const groups = loadConfig(dirPath)
-    expect(groups[0]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_A")
-    expect(groups[1]?.accessTokenEnv).toBe("ACCESS_TOKEN_TEAM_B")
+    expect(groups[0]?.accessTokenEnv).toBe("ACCESS_TOKEN_GROUP_A")
+    expect(groups[1]?.accessTokenEnv).toBe("ACCESS_TOKEN_GROUP_B")
   })
 
   it("空のディレクトリのとき空配列を返す", () => {
@@ -302,8 +302,8 @@ repositories:
 
   it(".yaml / .yml 以外のファイルは無視する", () => {
     const dirPath = writeConfigDir({
-      "team-a.yaml": `
-accessTokenEnv: ACCESS_TOKEN_TEAM_A
+      "group-a.yaml": `
+accessTokenEnv: ACCESS_TOKEN_GROUP_A
 repositories:
   - projectId: 1
     projectName: service-a
@@ -317,14 +317,14 @@ repositories:
 
   it("ディレクトリ内のファイルに不正な YAML があるとき例外をスローする", () => {
     const dirPath = writeConfigDir({
-      "team-a.yaml": "just a string",
+      "group-a.yaml": "just a string",
     })
     expect(() => loadConfig(dirPath)).toThrow("形式が不正です")
   })
 
   it("ディレクトリ内のファイルに accessTokenEnv がないとき例外をスローする", () => {
     const dirPath = writeConfigDir({
-      "team-a.yaml": `
+      "group-a.yaml": `
 repositories:
   - projectId: 1
     projectName: service-a

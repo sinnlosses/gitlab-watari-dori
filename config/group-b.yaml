@@ -1,4 +1,4 @@
-accessTokenEnv: ACCESS_TOKEN_TEAM_B
+accessTokenEnv: ACCESS_TOKEN_GROUP_B
 
 repositories:
   - projectId: 82861978

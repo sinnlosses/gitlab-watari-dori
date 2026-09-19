@@ -1,6 +1,6 @@
 const SENSITIVE_KEYS = new Set(["token", "access_token", "authorization", "password", "secret"])
 
-// グループごとのトークンは ACCESS_TOKEN_TEAM_A のように接尾辞つきのキーになりうるため前方一致で見る。
+// グループごとのトークンは ACCESS_TOKEN_GROUP_A のように接尾辞つきのキーになりうるため前方一致で見る。
 // accessTokenEnv（環境変数の「名前」であって値ではない）は小文字化しても
 // アンダースコアが無いので前方一致せず、そのまま残る
 const SENSITIVE_KEY_PREFIX = "access_token_"

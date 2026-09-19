@@ -471,14 +471,14 @@ describe("run", () => {
 })
 
 describe("process - グループごとのアクセストークン", () => {
-  const teamA = toAccessTokenEnvName("ACCESS_TOKEN_TEAM_A")
-  const teamB = toAccessTokenEnvName("ACCESS_TOKEN_TEAM_B")
+  const groupA = toAccessTokenEnvName("ACCESS_TOKEN_GROUP_A")
+  const groupB = toAccessTokenEnvName("ACCESS_TOKEN_GROUP_B")
   const clientA = { name: "a" } as unknown as GitlabClient
   const clientB = { name: "b" } as unknown as GitlabClient
 
   const twoGroups = [
     {
-      accessTokenEnv: teamA,
+      accessTokenEnv: groupA,
       repositories: [
         {
           projectId: toProjectId(1),
@@ -488,7 +488,7 @@ describe("process - グループごとのアクセストークン", () => {
       ],
     },
     {
-      accessTokenEnv: teamB,
+      accessTokenEnv: groupB,
       repositories: [
         {
           projectId: toProjectId(2),
@@ -500,8 +500,8 @@ describe("process - グループごとのアクセストークン", () => {
   ]
 
   beforeEach(() => {
-    process.env[teamA] = "token-a"
-    process.env[teamB] = "token-b"
+    process.env[groupA] = "token-a"
+    process.env[groupB] = "token-b"
     vi.mocked(createClient).mockImplementation((_host, token) =>
       token === "token-a" ? clientA : clientB,
     )
@@ -513,8 +513,8 @@ describe("process - グループごとのアクセストークン", () => {
   })
 
   afterEach(() => {
-    delete process.env[teamA]
-    delete process.env[teamB]
+    delete process.env[groupA]
+    delete process.env[groupB]
     vi.clearAllMocks()
   })
 
@@ -531,8 +531,8 @@ describe("process - グループごとのアクセストークン", () => {
   })
 
   it("宣言された環境変数が未設定のとき MR 作成を1件も試みずにエラーになる", async () => {
-    delete process.env[teamB]
-    await expect(processFn()).rejects.toThrow(teamB)
+    delete process.env[groupB]
+    await expect(processFn()).rejects.toThrow(groupB)
     expect(createClient).not.toHaveBeenCalled()
     expect(branchExists).not.toHaveBeenCalled()
     expect(createMergeRequest).not.toHaveBeenCalled()

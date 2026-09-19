@@ -29,7 +29,7 @@ export function toGitLabUrl(s: string): GitLabUrl {
 
 declare const accessTokenEnvNameBrand: unique symbol
 /**
- * アクセストークンが入っている環境変数の名前（`ACCESS_TOKEN_TEAM_A` など）。
+ * アクセストークンが入っている環境変数の名前（`ACCESS_TOKEN_GROUP_A` など）。
  * 素の文字列（トークンの値）と取り違えないようブランド型にしている。
  * 名前の形式は `src/lib/config.ts` の zod スキーマが検証する。
  */

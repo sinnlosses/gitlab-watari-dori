@@ -25,7 +25,7 @@
 
 ## Features
 
-- **複数プロジェクト・複数ブランチペアに対応** — 1 つの YAML に複数リポジトリ・ブランチペアを定義。チームごとにファイルを分割できます
+- **複数プロジェクト・複数ブランチペアに対応** — 1 つの YAML に複数リポジトリ・ブランチペアを定義。グループごとにファイルを分割できます
 - **重複作成を防ぐ 3 段階チェック** — ①ブランチ存在確認 → ②差分コミット確認 → ③既存 MR 確認 の順に検証し、必要なときだけ作成します
 - **並列実行による高速処理** — `CONCURRENCY_LIMIT` で同時実行数を制御（デフォルト: 5）
 - **自動リトライ** — Rate Limit (429) やゲートウェイエラー (502/503/504) を検出し、指数バックオフで最大 3 回リトライします
@@ -50,18 +50,18 @@ cd gitlab-watari-dori
 pnpm install
 
 # 2. 設定ファイルを作成
-cp config/team-a.yaml config/my-team.yaml
+cp config/group-a.yaml config/my-group.yaml
 # → projectId と branchPairs を自分の環境に合わせて編集
 
 # 3. 動作確認（API 呼び出しなし・安全）
 GITLAB_URL=https://gitlab.example.com \
-ACCESS_TOKEN_TEAM_A=glpat-xxxxxxxxxxxxxxxxxxxx \
+ACCESS_TOKEN_GROUP_A=glpat-xxxxxxxxxxxxxxxxxxxx \
 DRY_RUN=true \
 pnpm dev
 
 # 4. 実行
 GITLAB_URL=https://gitlab.example.com \
-ACCESS_TOKEN_TEAM_A=glpat-xxxxxxxxxxxxxxxxxxxx \
+ACCESS_TOKEN_GROUP_A=glpat-xxxxxxxxxxxxxxxxxxxx \
 pnpm dev
 ```
 
@@ -99,31 +99,31 @@ flowchart TD
 
 ### 環境変数
 
-| 変数名              | 必須 | デフォルト | 説明                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------- | :--: | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GITLAB_URL`        |  ✓   | —          | GitLab インスタンスの URL（`http://` または `https://` で始まる形式）                                                                                                                                                                                                                                                                                                                |
-| `ACCESS_TOKEN_*`    |  ✓   | —          | `api` スコープを持つ Personal Access Token または Group/Project Access Token。**変数名は固定ではなく、各設定ファイルの `accessTokenEnv` に書いた名前**（例: `ACCESS_TOKEN_TEAM_A`）。設定ファイルの数だけ用意します。**同一グループ内の複数リポジトリを扱う場合は Group Access Token を推奨**（Personal Access Token の `api` スコープはインスタンス全体への読み書き権限を持ちます） |
-| `SKIP_PROJECT_IDS`  |      | —          | MR 作成をスキップするプロジェクト ID（カンマ区切り、例: `"123,456"`）                                                                                                                                                                                                                                                                                                                |
-| `CONFIG_PATH`       |      | `config/`  | 設定ファイルまたはディレクトリのパス（作業ディレクトリ外のパスは拒否されます）                                                                                                                                                                                                                                                                                                       |
-| `CONCURRENCY_LIMIT` |      | `5`        | 並列実行数（1〜20 の整数。範囲外・非整数はエラーで終了）                                                                                                                                                                                                                                                                                                                             |
-| `DRY_RUN`           |      | `false`    | `"true"` のとき MR 作成のみをスキップします。ブランチ存在確認・差分確認・既存 MR 確認は実行されるため、「どのペアで MR が作成されるか」を事前確認できます                                                                                                                                                                                                                            |
+| 変数名              | 必須 | デフォルト | 説明                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------- | :--: | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITLAB_URL`        |  ✓   | —          | GitLab インスタンスの URL（`http://` または `https://` で始まる形式）                                                                                                                                                                                                                                                                                                                 |
+| `ACCESS_TOKEN_*`    |  ✓   | —          | `api` スコープを持つ Personal Access Token または Group/Project Access Token。**変数名は固定ではなく、各設定ファイルの `accessTokenEnv` に書いた名前**（例: `ACCESS_TOKEN_GROUP_A`）。設定ファイルの数だけ用意します。**同一グループ内の複数リポジトリを扱う場合は Group Access Token を推奨**（Personal Access Token の `api` スコープはインスタンス全体への読み書き権限を持ちます） |
+| `SKIP_PROJECT_IDS`  |      | —          | MR 作成をスキップするプロジェクト ID（カンマ区切り、例: `"123,456"`）                                                                                                                                                                                                                                                                                                                 |
+| `CONFIG_PATH`       |      | `config/`  | 設定ファイルまたはディレクトリのパス（作業ディレクトリ外のパスは拒否されます）                                                                                                                                                                                                                                                                                                        |
+| `CONCURRENCY_LIMIT` |      | `5`        | 並列実行数（1〜20 の整数。範囲外・非整数はエラーで終了）                                                                                                                                                                                                                                                                                                                              |
+| `DRY_RUN`           |      | `false`    | `"true"` のとき MR 作成のみをスキップします。ブランチ存在確認・差分確認・既存 MR 確認は実行されるため、「どのペアで MR が作成されるか」を事前確認できます                                                                                                                                                                                                                             |
 
 ### config/
 
-対象リポジトリとブランチペアをチームごとのファイルで定義します。`config/` ディレクトリ内の `.yaml` / `.yml` ファイルをアルファベット順に読み込み、結合します。
+対象リポジトリとブランチペアをグループごとのファイルで定義します。`config/` ディレクトリ内の `.yaml` / `.yml` ファイルをアルファベット順に読み込み、結合します。
 
 ```
 config/
-├── team-a.yaml
-└── team-b.yaml
+├── group-a.yaml
+└── group-b.yaml
 ```
 
 ```yaml
-# config/my-team.yaml
+# config/my-group.yaml
 
 # このファイルのリポジトリを操作するアクセストークンが入っている環境変数の「名前」（必須）。
 # 書けるのは `ACCESS_TOKEN_` で始まる名前だけで、トークンの値そのものはここに書きません
-accessTokenEnv: ACCESS_TOKEN_MY_TEAM
+accessTokenEnv: ACCESS_TOKEN_MY_GROUP
 
 repositories:
   # projectId: GitLab の Settings > General または URL から確認できる数値 ID
@@ -222,11 +222,11 @@ pnpm test             # テスト
 pnpm test:coverage    # カバレッジ付きテスト
 
 # ローカル実行（TypeScript 直接）
-GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN_TEAM_A=<token> pnpm dev
+GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN_GROUP_A=<token> pnpm dev
 
 # 本番ビルド後に実行
 pnpm build
-GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN_TEAM_A=<token> pnpm start
+GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN_GROUP_A=<token> pnpm start
 ```
 
 ### プロジェクト構成

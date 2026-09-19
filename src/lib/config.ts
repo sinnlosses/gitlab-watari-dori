@@ -33,7 +33,7 @@ const AccessTokenEnvNameSchema = z
   .string({
     error:
       "accessTokenEnv は必須です。設定ファイルのトップレベルに、この設定ファイルのリポジトリを" +
-      "操作するトークンが入っている環境変数名を書いてください（例: 'ACCESS_TOKEN_TEAM_A'）",
+      "操作するトークンが入っている環境変数名を書いてください（例: 'ACCESS_TOKEN_GROUP_A'）",
   })
   .regex(
     /^ACCESS_TOKEN_[A-Z0-9_]+$/,
