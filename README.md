@@ -105,7 +105,7 @@ flowchart TD
 | `ACCESS_TOKEN`      |  ✓   | —          | `api` スコープを持つ Personal Access Token または Group/Project Access Token。**同一グループ内の複数リポジトリを扱う場合は Group Access Token を推奨**（Personal Access Token の `api` スコープはインスタンス全体への読み書き権限を持ちます） |
 | `SKIP_PROJECT_IDS`  |      | —          | MR 作成をスキップするプロジェクト ID（カンマ区切り、例: `"123,456"`）                                                                                                                                                                         |
 | `CONFIG_PATH`       |      | `config/`  | 設定ファイルまたはディレクトリのパス（作業ディレクトリ外のパスは拒否されます）                                                                                                                                                                |
-| `CONCURRENCY_LIMIT` |      | `5`        | 並列実行数（1 以上の整数。非整数・0 以下はエラーで終了）                                                                                                                                                                                      |
+| `CONCURRENCY_LIMIT` |      | `5`        | 並列実行数（1〜20 の整数。範囲外・非整数はエラーで終了）                                                                                                                                                                                      |
 | `DRY_RUN`           |      | `false`    | `"true"` のとき MR 作成のみをスキップします。ブランチ存在確認・差分確認・既存 MR 確認は実行されるため、「どのペアで MR が作成されるか」を事前確認できます                                                                                     |
 
 ### config/
@@ -140,7 +140,8 @@ repositories:
         target: main
 ```
 
-> **バリデーション:** `source` / `target` が空文字・同一ブランチ名・`..` を含むパスの場合は起動時にエラーで終了します。
+> **バリデーション:** `source` / `target` が空文字の場合、または同じブランチ名を指している場合は起動時にエラーで終了します。
+> また `CONFIG_PATH` に作業ディレクトリ外を指すパス（`..` を含むものなど）を渡した場合も起動時にエラーで終了します。
 
 設定ファイルの文法チェックのみ実行する場合:
 
@@ -241,6 +242,8 @@ GITLAB_URL=https://gitlab.example.com ACCESS_TOKEN=<token> pnpm start
 │       └── logger.ts     # 構造化 JSON ロガー
 ├── test/                 # テスト
 ├── config/               # 対象リポジトリ設定
+├── docs/                 # 要件・アーキテクチャ・規約・用語集（索引は docs/README.md）
+├── develop/              # タスク管理（tasks.json / progress.md / direction.md）
 ├── .gitlab-ci.yml        # CI ジョブ定義
 └── package.json
 ```
