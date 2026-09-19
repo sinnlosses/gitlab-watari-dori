@@ -23,3 +23,7 @@ README・.gitlab-ci.yml・CLAUDE.md・docs/ の記述は直前のコミットで
 ## 未解決
 
 ## 注意
+
+- 「チーム」→「グループ」の置換は、`grep -rl` から `sed` へ一括で流さない。README の背景、
+  `docs/requirements.md`、CLAUDE.md の「## チームエージェント方針」にある「チーム」は
+  人の集まりを指しており、残さなければならない
