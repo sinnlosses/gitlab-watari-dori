@@ -28,8 +28,8 @@
     "dependencies": ["T-001", "T-002"],
     "summary": "グループごとのトークンに合わせて README・CI 設定を更新する",
     "task": "## 背景\n\n`ACCESS_TOKEN` は単一のトークンとして次の箇所に書かれている。前タスクで実装が\n`ACCESS_TOKEN_<グループ名>` 方式に変わるので、これらを追随させる。\n\n- `README.md`（7箇所。Quick Start のコマンド例、「設定 > 環境変数」表、「CI/CD」節の変数表と\n  Masked/Protected の注意、「開発」節のコマンド例）\n- `CLAUDE.md`（「セットアップ / 環境構築」節、「CI/CD」節）\n- `docs/requirements.md`（Masked: ON / Protected: ON の非機能要件）\n- `docs/smoke-test.md`（前提の表、環境変数の export 例、認証エラーの確認手順）\n- `.gitlab-ci.yml`（先頭コメントと `variables`）\n\nCLAUDE.md は「環境変数を足すときは `src/lib/env.ts`・`README.md` の表・`.gitlab-ci.yml` の\n`variables` を同時に更新する」と定めている。\n\n## 決まっていること（蒸し返さない）\n\n- グループの単位は config ファイル1つ。設定ファイルのトップレベルに `accessTokenEnv` を書く\n- 単一 `ACCESS_TOKEN` へのフォールバックは無い。ドキュメントにも移行用の経路として\n  書かない\n\n## やること\n\n1. `README.md` の「設定 > 環境変数」表の `ACCESS_TOKEN` 行を `ACCESS_TOKEN_<GROUP>` に\n   書き換え、「config/」節に `accessTokenEnv` の説明と記述例を足す\n2. `README.md` の Quick Start・「CI/CD」節・「開発」節のコマンド例と変数表を新方式に直す\n3. `.gitlab-ci.yml` の先頭コメントと `variables` を新方式に合わせる。グループごとのトークンは\n   名前が設定ファイル依存で可変なため `variables` に列挙できない可能性がある — 列挙できない\n   なら書かず、CI/CD Variables 側に登録する手順として `README.md` に書く\n4. `CLAUDE.md`・`docs/requirements.md`・`docs/smoke-test.md` を新方式に直す\n5. `docs/architecture.md` に、この方式を採った設計判断（グループ = config ファイル1つ、\n   フォールバックを作らない理由）を1節として足す\n\n## 完了条件\n\n- `pnpm check` が通る\n- `grep -rn 'ACCESS_TOKEN' --include='*.md' --include='*.yml' .`（`node_modules` を除く）の\n  結果に、単一トークンを前提にした記述が残っていないことを確認し、その出力を `evidence` に\n  残す\n\n## 注意\n\n- Masked: ON / Protected: ON の指示は方式が変わっても残す\n- ドキュメントにタスク番号を書かない\n",
-    "status": "todo",
-    "passes": false,
-    "evidence": ""
+    "status": "done",
+    "passes": true,
+    "evidence": "pnpm check 通過（11 files / 186 tests, exit 0）。やること1〜4（README・.gitlab-ci.yml・CLAUDE.md・docs/requirements.md・docs/smoke-test.md）は先行コミット 25c7656 で追随済みだったことを実物で確認し、未着手だったやること5（docs/architecture.md の設計判断「グループ = 設定ファイル 1 つ、単一トークンへのフォールバックは作らない」）を追加。grep -rn ACCESS_TOKEN --include=*.md --include=*.yml の結果、単一トークン前提の記述は develop/progress.md と docs/history/direction.md（いずれも過去の記録）のみ。"
   }
 ]
