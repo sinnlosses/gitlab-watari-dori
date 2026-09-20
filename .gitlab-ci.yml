@@ -13,7 +13,7 @@ spec:
       default: "5"
       type: string
     CONFIG_PATH:
-      description: "設定ファイルのパス（省略時はデフォルト: config.yaml）"
+      description: "設定ファイルまたはディレクトリのパス（省略時は config/ 配下すべて。特定グループだけ実行するなら config/group-a.yaml のようにファイルを指定する）"
       default: ""
       type: string
 ---
@@ -56,7 +56,7 @@ variables:
     description: "同時 API リクエスト数（1〜20 の整数、デフォルト: 5）省略可"
   CONFIG_PATH:
     value: "$[[ inputs.CONFIG_PATH ]]"
-    description: "設定ファイルのパス（省略時はデフォルト: config.yaml）省略可"
+    description: "設定ファイルまたはディレクトリのパス（省略時は config/ 配下すべて。特定グループだけ実行するならそのファイルを指定）省略可"
   PNPM_STORE_DIR:
     value: .pnpm-store
     description: "pnpm キャッシュの保存先（変更不要）"
