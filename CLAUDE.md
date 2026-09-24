@@ -118,29 +118,6 @@ Spec 軸（`docs/requirements.md`）を参照。
 **403 を fatal にしない理由**、`limit.clearQueue()` の位置、fatal 終了時の後始末は
 [`docs/architecture.md`](./docs/architecture.md)「設計判断」「既知の制約・注意点」が正典。
 
-## チームエージェント方針
-
-### 3 エージェント構成
-
-| エージェント    | 担当範囲                                                                        | 起動タイミング                                          |
-| --------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| researcher      | 外部 API 仕様・ライブラリ Changelog・類似実装パターン・既存 Issue/PR の文脈収集 | 外部仕様確認・ライブラリアップグレード・新機能実装時    |
-| tdd-implementer | テストリスト作成 → RED → GREEN → REFACTOR のサイクル。バグ調査・デバッグも担当  | 新機能・バグ修正・未テストコードへのテスト追加          |
-| reviewer        | テストの質・TDD サイクルの遵守・コーディング規約・ドキュメント整合性のレビュー  | tdd-implementer が GREEN にしたコードをレビューするとき |
-
-### 典型的なフロー
-
-```
-# 新機能実装
-Agent(researcher, run_in_background=true)    // 仕様確認が必要な場合のみ
-→ Agent(tdd-implementer)                     // researcher の結果を渡してから起動
-→ Agent(reviewer)                            // GREEN 報告を受けてから起動
-
-# バグ修正
-Agent(tdd-implementer)                       // diagnose スキルで根本原因を特定してから委任
-→ Agent(reviewer)
-```
-
 ## Git運用
 
 個人開発のため、**作業ブランチは切らず `main` に直接コミットする**。「デフォルトブランチに
